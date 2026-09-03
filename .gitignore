@@ -23,3 +23,7 @@ rustup-init.exe
 
 # 临时文件
 _tmp_*
+
+# TS incremental build cache
+*.tsbuildinfo
+rustup-init.exe
