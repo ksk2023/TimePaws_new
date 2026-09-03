@@ -198,7 +198,7 @@ export default function SettingsPage() {
       </div>
 
       <p className="text-xs text-mist-faint leading-relaxed">
-        Anchor 不联网、不上传任何数据。标题仅在本机数据库中用于展示，可随时清空或导出后删除。
+        TimePaws 不联网、不上传任何数据。标题仅在本机数据库中用于展示，可随时清空或导出后删除。
       </p>
     </section>
   );

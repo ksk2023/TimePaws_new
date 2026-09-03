@@ -28,3 +28,4 @@ _tmp_*
 # TS incremental build cache
 *.tsbuildinfo
 rustup-init.exe
+.git-rewrite

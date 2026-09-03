@@ -31,7 +31,7 @@ export default function App() {
       {/* 左侧导航 */}
       <nav className="w-44 shrink-0 bg-ink-800 p-3 flex flex-col gap-1" aria-label="主导航">
         <div className="px-2 py-3">
-          <div className="text-lg2 font-semibold text-mist">Anchor</div>
+          <div className="text-lg2 font-semibold text-mist">TimePaws</div>
           <div className="text-sm text-mist-faint">锚点 · 陪你回到计划</div>
         </div>
         {NAV.map((item) => (

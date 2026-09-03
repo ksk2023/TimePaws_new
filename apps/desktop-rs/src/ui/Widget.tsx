@@ -69,7 +69,7 @@ export default function Widget() {
       {/* 标题栏：可拖拽 */}
       <div className="drag-region flex items-center px-3 pt-2.5 pb-1 gap-2">
         <span className="w-2 h-2 rounded-full bg-calm shrink-0" aria-hidden />
-        <span className="text-xs font-medium text-mist-dim">锚点</span>
+        <span className="text-xs font-medium text-mist-dim">TimePaws</span>
         <button
           className="no-drag ml-auto w-6 h-6 rounded-md text-mist-faint hover:text-mist hover:bg-ink-600"
           onClick={() => window.anchor.widgetToggleCollapse()}

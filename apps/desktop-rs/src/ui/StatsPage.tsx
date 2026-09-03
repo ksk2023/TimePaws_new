@@ -54,7 +54,7 @@ export default function StatsPage() {
         <div className="text-sm text-mist-faint mb-4">最近 14 天 · 每日前台总时长</div>
         {data.length === 0 ? (
           <p className="text-sm text-mist-faint">
-            还没有历史数据。Anchor 会从第一次运行开始积累，明天再来看趋势。
+            还没有历史数据。TimePaws 会从第一次运行开始积累，明天再来看趋势。
           </p>
         ) : (
           <div className="flex items-end gap-2 h-40">

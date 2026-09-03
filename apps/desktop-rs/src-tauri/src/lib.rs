@@ -1,5 +1,5 @@
-//! Anchor 锚点 — Tauri 2 版 (M0: 窗口 + 托盘 + IPC ping)
-//! 后续里程碑在此之上递增：M1 追踪(windows crate 替代 koffi)、M2 rusqlite、M3+ 同 Electron 版逻辑。
+//! TimePaws — Tauri 2 版 (M0: 窗口 + 托盘 + IPC ping)
+//! 里程碑：M1 追踪(windows crate)、M2 rusqlite、M3 任务箱、M4 提醒引擎、M5 设置/导出。
 
 use tauri::{
     menu::{Menu, MenuItem},
@@ -308,13 +308,13 @@ pub fn run() {
 
             // ---- 托盘（对应 Electron 版 tray.ts）----
             let show_i = MenuItem::with_id(app, "show", "显示 / 隐藏主窗口", true, None::<&str>)?;
-            let quit_i = MenuItem::with_id(app, "quit", "退出 Anchor", true, None::<&str>)?;
+            let quit_i = MenuItem::with_id(app, "quit", "退出 TimePaws", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
 
             let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray.png"))?;
             let _tray = TrayIconBuilder::with_id("anchor-tray")
                 .icon(icon)
-                .tooltip("Anchor 锚点")
+                .tooltip("TimePaws")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
