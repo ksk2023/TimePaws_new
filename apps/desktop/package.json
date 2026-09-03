@@ -4,7 +4,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Anchor（锚点）—— Windows 桌面 ADHD 陪伴应用：主屏使用追踪 + 当前任务 + 温和提醒",
-  "author": "keshankun",
+  "author": "ksk2023",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "tsc -p tsconfig.electron.json && vite",

@@ -16,3 +16,7 @@ Thumbs.db
 apps/desktop-rs/src-tauri/target/
 apps/desktop-rs/dist/
 apps/desktop-rs/node_modules
+
+# 安装器 / 二进制
+rustup-init.exe
+*.exe

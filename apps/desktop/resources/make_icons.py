@@ -1,7 +1,10 @@
 """生成 Anchor 托盘/应用图标（16/32/256 px），仅写入本项目 resources/。"""
+import os
+
 from PIL import Image, ImageDraw
 
-OUT = r"E:\AI_projects\Anchor\apps\desktop\resources"
+# 相对脚本自身定位，避免硬编码个人路径（公开仓库可移植）
+OUT = os.path.dirname(os.path.abspath(__file__))
 
 
 def draw_anchor(size: int) -> Image.Image:
@@ -34,8 +37,8 @@ def draw_anchor(size: int) -> Image.Image:
 
 
 for px in (16, 24, 32, 48, 256):
-    draw_anchor(px).save(f"{OUT}\\tray-{px}.png")
+    draw_anchor(px).save(os.path.join(OUT, f"tray-{px}.png"))
 
 # Electron Tray 推荐：同时含 16@1x 与 32（2x）；Windows 下直接用 32 也清晰
-draw_anchor(32).save(f"{OUT}\\tray.png")
+draw_anchor(32).save(os.path.join(OUT, "tray.png"))
 print("icons written to", OUT)
