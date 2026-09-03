@@ -1,0 +1,13 @@
+# deps & builds
+node_modules
+dist
+dist-electron
+release
+*.log
+
+# pnpm store temp
+.pnpm-store
+
+# os
+.DS_Store
+Thumbs.db

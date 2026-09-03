@@ -1,0 +1,14 @@
+{
+  "name": "anchor-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Anchor（锚点）— ADHD 友好的 Windows 桌面陪伴层",
+  "scripts": {
+    "dev": "pnpm --filter @anchor/desktop dev",
+    "build": "pnpm --filter @anchor/desktop build",
+    "typecheck": "pnpm --filter @anchor/desktop typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
