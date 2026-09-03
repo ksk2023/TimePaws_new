@@ -20,3 +20,6 @@ apps/desktop-rs/node_modules
 # 安装器 / 二进制
 rustup-init.exe
 *.exe
+
+# 临时文件
+_tmp_*
