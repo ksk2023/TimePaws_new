@@ -34,7 +34,9 @@ windows = { version = "0.62", features = [
 
 [profile.release]
 panic = "abort"
-codegen-units = 1
-lto = true
+# 迭代期用 thin LTO + 多 codegen 并行（体积/速度接近 fat LTO，编译快数倍）
+# 正式发布前可切回 lto = true / codegen-units = 1 做最终体积优化
+codegen-units = 16
+lto = "thin"
 opt-level = "s"
 strip = true
