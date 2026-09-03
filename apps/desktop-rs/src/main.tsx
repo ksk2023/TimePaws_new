@@ -2,7 +2,7 @@ import { createRoot } from 'react-dom/client';
 import App from './ui/App';
 import Widget from './ui/Widget';
 import Overlay from './ui/Overlay';
-import { installAnchorBridge } from './lib/tauri-bridge';
+import { installTimepawsBridge } from './lib/tauri-bridge';
 import './styles.css';
 
 /**
@@ -11,14 +11,14 @@ import './styles.css';
  * - 小组件：#/widget → Widget
  * - 浮层：#/overlay → Overlay
  *
- * Tauri 版：先挂 window.anchor 桥接（invoke/listen），再渲染 UI
+ * Tauri 版：先挂 window.timepaws 桥接（invoke/listen），再渲染 UI
  */
 const hash = window.location.hash;
 
 const container = document.getElementById('root');
 if (!container) throw new Error('missing #root');
 
-void installAnchorBridge().then(() => {
+void installTimepawsBridge().then(() => {
   if (hash.startsWith('#/widget')) {
     createRoot(container).render(<Widget />);
   } else if (hash.startsWith('#/overlay')) {

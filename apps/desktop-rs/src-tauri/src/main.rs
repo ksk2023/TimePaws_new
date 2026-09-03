@@ -1,5 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    anchor_desktop_lib::run()
+    timepaws_lib::run()
 }

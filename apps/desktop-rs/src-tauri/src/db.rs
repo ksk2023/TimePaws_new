@@ -23,7 +23,7 @@ pub fn db_path(app: &tauri::AppHandle) -> PathBuf {
         .app_data_dir()
         .unwrap_or_else(|_| PathBuf::from("."));
     let _ = std::fs::create_dir_all(&dir);
-    dir.join("anchor.db")
+    dir.join("timepaws.db")
 }
 
 pub fn init(app: &tauri::AppHandle) -> Result<(), String> {

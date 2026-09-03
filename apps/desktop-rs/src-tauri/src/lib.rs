@@ -18,12 +18,12 @@ pub mod tracker;
 /// M4：上一条快照的空闲毫秒（idle_back 检测用）
 static IDLE_PREV: Mutex<u64> = Mutex::new(0);
 
-/// M0 IPC：连通性探测（对应 Electron 版 anchor/ping）
+/// M0 IPC：连通性探测（对应 Electron 版 timepaws/ping）
 #[tauri::command]
 fn ping(app: tauri::AppHandle) -> serde_json::Value {
     serde_json::json!({
         "ok": true,
-        "app": "anchor-tauri",
+        "app": "timepaws",
         "version": app.package_info().version.to_string(),
         "at": chrono::Utc::now().timestamp_millis(),
     })
@@ -312,7 +312,7 @@ pub fn run() {
             let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
 
             let icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray.png"))?;
-            let _tray = TrayIconBuilder::with_id("anchor-tray")
+            let _tray = TrayIconBuilder::with_id("timepaws-tray")
                 .icon(icon)
                 .tooltip("TimePaws")
                 .menu(&menu)

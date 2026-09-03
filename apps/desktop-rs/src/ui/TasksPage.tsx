@@ -1,6 +1,6 @@
 /**
  * 任务箱（M3）：任务 CRUD + 设定当前任务（doing，全局至多一个）+ 专注时长展示。
- * 多窗口同步：订阅 anchor:tasks:changed 广播。
+ * 多窗口同步：订阅 timepaws:tasks:changed 广播。
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TaskInfo } from '@/lib/api';
@@ -27,12 +27,12 @@ export default function TasksPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(() => {
-    window.anchor.tasksList(true).then(setTasks).catch(() => setFailed(true));
+    window.timepaws.tasksList(true).then(setTasks).catch(() => setFailed(true));
   }, []);
 
   useEffect(() => {
     refresh();
-    window.anchor.onTasksChanged(refresh);
+    window.timepaws.onTasksChanged(refresh);
   }, [refresh]);
 
   const submitDraft = async (): Promise<void> => {
@@ -40,7 +40,7 @@ export default function TasksPage() {
     if (!text) return;
     setAdding(true);
     try {
-      await window.anchor.tasksCreate(text);
+      await window.timepaws.tasksCreate(text);
       setDraft('');
     } finally {
       setAdding(false);
@@ -50,7 +50,7 @@ export default function TasksPage() {
 
   const saveEdit = async (id: number): Promise<void> => {
     const text = editDraft.trim();
-    if (text) await window.anchor.tasksUpdateText(id, text);
+    if (text) await window.timepaws.tasksUpdateText(id, text);
     setEditingId(null);
   };
 
@@ -115,7 +115,7 @@ export default function TasksPage() {
                   {/* 状态点 / 完成勾选 */}
                   {t.status === 'done' ? (
                     <button
-                      onClick={() => void window.anchor.tasksReopen(t.id)}
+                      onClick={() => void window.timepaws.tasksReopen(t.id)}
                       title="恢复为待办"
                       className="w-5 h-5 shrink-0 rounded-full bg-calm/70 text-ink-900 text-xs flex items-center justify-center"
                       aria-label={`恢复任务：${t.text}`}
@@ -124,7 +124,7 @@ export default function TasksPage() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => void window.anchor.tasksComplete(t.id)}
+                      onClick={() => void window.timepaws.tasksComplete(t.id)}
                       title="标记完成"
                       className="w-5 h-5 shrink-0 rounded-full border border-mist-faint hover:border-calm hover:bg-calm/20 transition-colors"
                       aria-label={`完成任务：${t.text}`}
@@ -175,7 +175,7 @@ export default function TasksPage() {
                   {/* 操作：设为当前 / 删除 */}
                   {t.status !== 'doing' && t.status !== 'done' && (
                     <button
-                      onClick={() => void window.anchor.tasksSetCurrent(t.id)}
+                      onClick={() => void window.timepaws.tasksSetCurrent(t.id)}
                       className="shrink-0 text-xs text-mist-faint hover:text-calm"
                       title="设为当前任务"
                     >
@@ -183,7 +183,7 @@ export default function TasksPage() {
                     </button>
                   )}
                   <button
-                    onClick={() => void window.anchor.tasksDelete(t.id)}
+                    onClick={() => void window.timepaws.tasksDelete(t.id)}
                     className="shrink-0 text-xs text-mist-faint hover:text-red-400"
                     aria-label={`删除任务：${t.text}`}
                   >

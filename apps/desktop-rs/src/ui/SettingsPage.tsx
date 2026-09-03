@@ -43,8 +43,8 @@ export default function SettingsPage() {
   const [confirmPurge, setConfirmPurge] = useState(false);
 
   const refresh = useCallback(() => {
-    window.anchor.settingsGet().then((v) => setS(v as unknown as SettingsShape)).catch(() => undefined);
-    window.anchor.dataStats().then(setStats).catch(() => undefined);
+    window.timepaws.settingsGet().then((v) => setS(v as unknown as SettingsShape)).catch(() => undefined);
+    window.timepaws.dataStats().then(setStats).catch(() => undefined);
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
@@ -55,7 +55,7 @@ export default function SettingsPage() {
   };
 
   const patch = async (p: Record<string, unknown>): Promise<void> => {
-    const next = await window.anchor.settingsUpdate(p);
+    const next = await window.timepaws.settingsUpdate(p);
     setS(next as unknown as SettingsShape);
   };
 
@@ -130,7 +130,7 @@ export default function SettingsPage() {
         <div className="py-3 flex items-center justify-between">
           <span className="text-base2 text-mist">预览一条提醒</span>
           <button
-            onClick={() => void window.anchor.remindersTest()}
+            onClick={() => void window.timepaws.remindersTest()}
             className="rounded-lg bg-ink-600 hover:bg-ink-600/70 px-3 py-1.5 text-sm text-mist-dim transition-colors"
           >
             预览
@@ -158,7 +158,7 @@ export default function SettingsPage() {
         <div className="flex gap-2">
           <button
             onClick={async () => {
-              const r = await window.anchor.dataExport();
+              const r = await window.timepaws.dataExport();
               flash(`已导出 ${r.sessions} 段会话到 exports 目录`);
             }}
             className="rounded-lg bg-ink-600 hover:bg-ink-600/70 px-4 py-2 text-sm text-mist-dim transition-colors"
@@ -169,7 +169,7 @@ export default function SettingsPage() {
             <div className="flex gap-2">
               <button
                 onClick={async () => {
-                  const r = await window.anchor.dataPurge(false);
+                  const r = await window.timepaws.dataPurge(false);
                   setConfirmPurge(false);
                   refresh();
                   flash(`已清空 ${r.sessions} 段会话与聚合数据（任务保留）`);

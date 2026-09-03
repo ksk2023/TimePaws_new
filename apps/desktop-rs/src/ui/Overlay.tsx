@@ -4,17 +4,17 @@
  * 主进程 showInactive 显示，不抢焦点；25s 无操作自动隐藏。
  */
 import { useEffect, useState } from 'react';
-import type { AnchorApi } from '@/lib/api';
+import type { TimepawsApi } from '@/lib/api';
 
 interface Payload { kind: string; title: string; body: string }
 
 export default function Overlay() {
   const [p, setP] = useState<Payload | null>(null);
-  const anchor = window.anchor as AnchorApi;
+  const tp = window.timepaws as TimepawsApi;
 
   useEffect(() => {
-    anchor.onOverlayPayload(setP);
-  }, [anchor]);
+    tp.onOverlayPayload(setP);
+  }, [tp]);
 
   // 无 payload 时透明静默（窗口隐藏态预加载）
   if (!p) return <div className="h-full bg-ink-800/95 rounded-xl2" />;
@@ -35,13 +35,13 @@ export default function Overlay() {
       {/* 操作 */}
       <div className="flex items-center gap-2 px-3.5 pb-3">
         <button
-          onClick={() => { setP(null); anchor.overlaySnooze(); }}
+          onClick={() => { setP(null); tp.overlaySnooze(); }}
           className="flex-1 rounded-lg bg-ink-600 hover:bg-ink-600/70 py-1.5 text-sm text-mist-dim transition-colors"
         >
           稍后提醒
         </button>
         <button
-          onClick={() => { setP(null); anchor.overlayDismiss(); }}
+          onClick={() => { setP(null); tp.overlayDismiss(); }}
           className="flex-1 rounded-lg bg-calm/80 hover:bg-calm py-1.5 text-sm font-medium text-ink-900 transition-colors"
         >
           知道了

@@ -1,6 +1,6 @@
 /**
- * Tauri 桥接层：把 Electron preload 暴露的 window.anchor API 映射到 Tauri invoke/listen。
- * 前端组件零改动 —— 仍按 window.anchor.* 调用。
+ * Tauri 桥接层：把 Electron preload 暴露的 window.timepaws API 映射到 Tauri invoke/listen。
+ * 前端组件零改动 —— 仍按 window.timepaws.* 调用。
  */
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
@@ -16,8 +16,8 @@ function parse<T>(v: any): T {
   return v as T;
 }
 
-export async function installAnchorBridge(): Promise<void> {
-  const anchor = {
+export async function installTimepawsBridge(): Promise<void> {
+  const timepaws = {
     ping: () =>
       invoke<{ ok: boolean; at: number }>('ping').then((r) => ({
         pong: r.ok,
@@ -79,7 +79,7 @@ export async function installAnchorBridge(): Promise<void> {
     overlayDismiss: () => invoke('overlay_dismiss'),
   };
 
-  (window as unknown as { anchor: unknown }).anchor = anchor;
+  (window as unknown as { timepaws: unknown }).timepaws = timepaws;
 
   // 订阅后端事件
   void listen<unknown>('tracker://session-ended', (e) => {
@@ -88,7 +88,7 @@ export async function installAnchorBridge(): Promise<void> {
   void listen('tasks://changed', () => {
     tasksChangedCbs.forEach((cb) => cb());
   });
-  void listen<unknown>('anchor:overlay:payload', (e) => {
+  void listen<unknown>('timepaws:overlay:payload', (e) => {
     overlayPayloadCb?.(e.payload);
   });
 }

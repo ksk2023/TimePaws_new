@@ -1,6 +1,6 @@
 /**
  * 统计页（M2）：最近 N 天每日前台总时长趋势条。
- * 数据源：anchor/stats/daily-totals。
+ * 数据源：timepaws/stats/daily-totals。
  */
 import { useEffect, useState } from 'react';
 
@@ -25,7 +25,7 @@ export default function StatsPage() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    window.anchor.statsDailyTotals(14)
+    window.timepaws.statsDailyTotals(14)
       .then(setRows)
       .catch(() => setFailed(true));
   }, []);
@@ -35,7 +35,7 @@ export default function StatsPage() {
       <section className="max-w-xl" aria-label="统计">
         <h1 className="text-xl font-semibold mb-6">统计</h1>
         <div className="rounded-xl2 bg-ink-800 p-5 text-mist-dim">
-          数据读取失败。<button className="underline hover:text-mist" onClick={() => window.anchor.statsDailyTotals(14).then(setRows).catch(() => setFailed(true))}>重试</button>
+          数据读取失败。<button className="underline hover:text-mist" onClick={() => window.timepaws.statsDailyTotals(14).then(setRows).catch(() => setFailed(true))}>重试</button>
         </div>
       </section>
     );

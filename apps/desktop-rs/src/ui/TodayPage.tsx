@@ -1,6 +1,6 @@
 /**
  * 今日页（M2）：今日前台总时长、Top 应用、最近活动时间线。
- * 数据源：anchor/stats/today；会话结束事件触发增量刷新。
+ * 数据源：timepaws/stats/today；会话结束事件触发增量刷新。
  */
 import { useCallback, useEffect, useState } from 'react';
 import type { DailySummary, ForegroundInfo } from '@/lib/api';
@@ -28,16 +28,16 @@ export default function TodayPage() {
   const [failed, setFailed] = useState(false);
 
   const refresh = useCallback(() => {
-    window.anchor.statsToday().then(setSummary).catch(() => setFailed(true));
+    window.timepaws.statsToday().then(setSummary).catch(() => setFailed(true));
   }, []);
 
   useEffect(() => {
     refresh();
-    window.anchor.trackerCurrent().then(setCurrent).catch(() => undefined);
-    window.anchor.onSessionEnded(() => refresh());
+    window.timepaws.trackerCurrent().then(setCurrent).catch(() => undefined);
+    window.timepaws.onSessionEnded(() => refresh());
     // 实时态 10s 轮询（会话结束事件不覆盖"一直停在同一个应用"的情况）
     const t = setInterval(() => {
-      window.anchor.trackerCurrent().then(setCurrent).catch(() => undefined);
+      window.timepaws.trackerCurrent().then(setCurrent).catch(() => undefined);
     }, 10_000);
     return () => clearInterval(t);
   }, [refresh]);

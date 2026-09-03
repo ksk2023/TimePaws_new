@@ -15,26 +15,26 @@ export default function Widget() {
   const [task, setTask] = useState<TaskInfo | null>(null);
 
   const refresh = useCallback(() => {
-    window.anchor.statsToday().then(setSummary).catch(() => undefined);
+    window.timepaws.statsToday().then(setSummary).catch(() => undefined);
   }, []);
 
   const refreshTask = useCallback(() => {
-    window.anchor.tasksCurrent().then(setTask).catch(() => undefined);
+    window.timepaws.tasksCurrent().then(setTask).catch(() => undefined);
   }, []);
 
   // 主进程 → 渲染层同步折叠状态（窗口尺寸变化由主进程完成）
   useEffect(() => {
-    window.anchor.onWidgetCollapsedChanged(setCollapsed);
+    window.timepaws.onWidgetCollapsedChanged(setCollapsed);
   }, [setCollapsed]);
 
   useEffect(() => {
     refresh();
     refreshTask();
-    window.anchor.trackerCurrent().then(setCurrent).catch(() => undefined);
-    window.anchor.onSessionEnded(() => refresh());
-    window.anchor.onTasksChanged(refreshTask);
+    window.timepaws.trackerCurrent().then(setCurrent).catch(() => undefined);
+    window.timepaws.onSessionEnded(() => refresh());
+    window.timepaws.onTasksChanged(refreshTask);
     const t = setInterval(() => {
-      window.anchor.trackerCurrent().then(setCurrent).catch(() => undefined);
+      window.timepaws.trackerCurrent().then(setCurrent).catch(() => undefined);
     }, 10_000);
     return () => clearInterval(t);
   }, [refresh, refreshTask]);
@@ -55,7 +55,7 @@ export default function Widget() {
         </div>
         <button
           className="no-drag px-2.5 h-full text-mist-dim hover:text-mist"
-          onClick={() => window.anchor.widgetToggleCollapse()}
+          onClick={() => window.timepaws.widgetToggleCollapse()}
           aria-label="展开小组件"
         >
           ▾
@@ -72,7 +72,7 @@ export default function Widget() {
         <span className="text-xs font-medium text-mist-dim">TimePaws</span>
         <button
           className="no-drag ml-auto w-6 h-6 rounded-md text-mist-faint hover:text-mist hover:bg-ink-600"
-          onClick={() => window.anchor.widgetToggleCollapse()}
+          onClick={() => window.timepaws.widgetToggleCollapse()}
           aria-label="折叠小组件"
         >
           ▴

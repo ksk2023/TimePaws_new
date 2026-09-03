@@ -1,5 +1,5 @@
 /**
- * 渲染进程可用的 Anchor API 类型（preload 暴露的白名单）。
+ * 渲染进程可用的 TimePaws API 类型（preload 暴露的白名单）。
  * M0：ping/折叠；M2：统计查询 + 会话事件。
  */
 
@@ -38,7 +38,7 @@ export interface TaskInfo {
   focus_ms: number;
 }
 
-export interface AnchorApi {
+export interface TimepawsApi {
   ping: () => Promise<{ pong: boolean; at: number }>;
   widgetToggleCollapse: () => void;
   onWidgetCollapsedChanged: (cb: (collapsed: boolean) => void) => void;
@@ -72,7 +72,7 @@ export interface AnchorApi {
 
 declare global {
   interface Window {
-    anchor: AnchorApi;
+    timepaws: TimepawsApi;
   }
 }
 

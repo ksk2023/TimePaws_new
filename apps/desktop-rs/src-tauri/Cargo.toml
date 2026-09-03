@@ -1,12 +1,12 @@
 [package]
-name = "anchor-desktop"
+name = "timepaws"
 version = "0.1.0"
-description = "Anchor 锚点 — 本地优先的 Windows 桌面 ADHD 陪伴应用 (Tauri 2)"
+description = "TimePaws — 本地优先的 Windows 桌面 ADHD 陪伴应用 (Tauri 2)"
 edition = "2021"
 rust-version = "1.77"
 
 [lib]
-name = "anchor_desktop_lib"
+name = "timepaws_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
