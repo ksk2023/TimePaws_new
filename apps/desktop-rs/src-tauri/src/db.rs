@@ -274,6 +274,135 @@ pub fn stats_daily_totals(days: i64) -> Result<Vec<serde_json::Value>, String> {
     Ok(rows)
 }
 
+// ---------------------------------------------------------------- 任务箱 (M3)
+
+#[derive(serde::Serialize)]
+pub struct TaskInfo {
+    pub id: i64,
+    pub text: String,
+    pub status: String, // todo | doing | done
+    pub created_at: i64,
+    pub done_at: Option<i64>,
+    pub focus_ms: i64,
+}
+
+/// 任务列表（include_done=false 时隐藏已完成）
+pub fn list_tasks(include_done: bool) -> Result<Vec<TaskInfo>, String> {
+    let c = conn()?;
+    let sql = if include_done {
+        "SELECT id, text, status, created_at, done_at, focus_ms FROM tasks ORDER BY status='doing' DESC, status='todo' DESC, created_at DESC"
+    } else {
+        "SELECT id, text, status, created_at, done_at, focus_ms FROM tasks WHERE status != 'done' ORDER BY status='doing' DESC, created_at DESC"
+    };
+    let mut stmt = c.prepare(sql).map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map([], |r| {
+            Ok(TaskInfo {
+                id: r.get(0)?,
+                text: r.get(1)?,
+                status: r.get(2)?,
+                created_at: r.get(3)?,
+                done_at: r.get(4)?,
+                focus_ms: r.get(5)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(rows)
+}
+
+/// 当前 doing 任务（全局至多一个）
+pub fn current_task() -> Result<Option<TaskInfo>, String> {
+    let c = conn()?;
+    let mut stmt = c
+        .prepare("SELECT id, text, status, created_at, done_at, focus_ms FROM tasks WHERE status = 'doing' LIMIT 1")
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query_map([], |r| {
+            Ok(TaskInfo {
+                id: r.get(0)?,
+                text: r.get(1)?,
+                status: r.get(2)?,
+                created_at: r.get(3)?,
+                done_at: r.get(4)?,
+                focus_ms: r.get(5)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    Ok(rows.next().transpose().ok().flatten())
+}
+
+/// 新建任务（todo）
+pub fn create_task(text: &str) -> Result<i64, String> {
+    let c = conn()?;
+    c.execute(
+        "INSERT INTO tasks (text, status, created_at) VALUES (?1, 'todo', ?2)",
+        params![text, now_ms()],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(c.last_insert_rowid())
+}
+
+/// 改任务文本
+pub fn update_task_text(id: i64, text: &str) -> Result<(), String> {
+    let c = conn()?;
+    c.execute("UPDATE tasks SET text = ?1 WHERE id = ?2", params![text, id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// 删除任务（doing 也可删）
+pub fn delete_task(id: i64) -> Result<(), String> {
+    let c = conn()?;
+    c.execute("DELETE FROM tasks WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// 设为当前任务：先清掉其他 doing（全局唯一），再置 doing
+pub fn set_current_task(id: i64) -> Result<(), String> {
+    let c = conn()?;
+    c.execute("UPDATE tasks SET status = 'todo' WHERE status = 'doing' AND id != ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    c.execute(
+        "UPDATE tasks SET status = 'doing', done_at = NULL WHERE id = ?1",
+        params![id],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// 完成任务：doing → done 也允许（完成即取消当前）
+pub fn complete_task(id: i64) -> Result<(), String> {
+    let c = conn()?;
+    c.execute(
+        "UPDATE tasks SET status = 'done', done_at = ?2 WHERE id = ?1",
+        params![id, now_ms()],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// 重新打开：done → todo
+pub fn reopen_task(id: i64) -> Result<(), String> {
+    let c = conn()?;
+    c.execute("UPDATE tasks SET status = 'todo', done_at = NULL WHERE id = ?1", params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// 专注时长累计到当前 doing 任务（M3 task-focus 直写版）
+pub fn add_focus_ms_to_current(counted_ms: i64) -> Result<(), String> {
+    let c = conn()?;
+    c.execute(
+        "UPDATE tasks SET focus_ms = focus_ms + ?1 WHERE status = 'doing'",
+        params![counted_ms],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 // ---------------------------------------------------------------- 工具
 
 fn now_ms() -> i64 {

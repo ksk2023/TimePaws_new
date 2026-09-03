@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import App from './ui/App';
 import Widget from './ui/Widget';
 import Overlay from './ui/Overlay';
+import { installAnchorBridge } from './lib/tauri-bridge';
 import './styles.css';
 
 /**
@@ -9,16 +10,20 @@ import './styles.css';
  * - 主窗口：#/  → App
  * - 小组件：#/widget → Widget
  * - 浮层：#/overlay → Overlay
+ *
+ * Tauri 版：先挂 window.anchor 桥接（invoke/listen），再渲染 UI
  */
 const hash = window.location.hash;
 
 const container = document.getElementById('root');
 if (!container) throw new Error('missing #root');
 
-if (hash.startsWith('#/widget')) {
-  createRoot(container).render(<Widget />);
-} else if (hash.startsWith('#/overlay')) {
-  createRoot(container).render(<Overlay />);
-} else {
-  createRoot(container).render(<App />);
-}
+void installAnchorBridge().then(() => {
+  if (hash.startsWith('#/widget')) {
+    createRoot(container).render(<Widget />);
+  } else if (hash.startsWith('#/overlay')) {
+    createRoot(container).render(<Overlay />);
+  } else {
+    createRoot(container).render(<App />);
+  }
+});

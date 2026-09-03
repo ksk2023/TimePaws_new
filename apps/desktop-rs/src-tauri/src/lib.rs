@@ -8,6 +8,7 @@ use tauri::{
 };
 
 pub mod db;
+pub mod tasks;
 pub mod tracker;
 
 /// M0 IPC：连通性探测（对应 Electron 版 anchor/ping）
@@ -62,6 +63,67 @@ fn stats_daily_totals(days: i64) -> Result<Vec<serde_json::Value>, String> {
     db::stats_daily_totals(days)
 }
 
+// ---- M3 IPC：任务箱 ----
+
+#[tauri::command]
+fn tasks_list(include_done: Option<bool>) -> Result<Vec<db::TaskInfo>, String> {
+    db::list_tasks(include_done.unwrap_or(false))
+}
+
+#[tauri::command]
+fn tasks_current() -> Result<Option<db::TaskInfo>, String> {
+    db::current_task()
+}
+
+#[tauri::command]
+fn tasks_create(text: String, app: tauri::AppHandle) -> Result<db::TaskInfo, String> {
+    let id = db::create_task(&text)?;
+    tasks::notify_changed(&app);
+    Ok(db::TaskInfo {
+        id,
+        text,
+        status: "todo".into(),
+        created_at: chrono::Utc::now().timestamp_millis(),
+        done_at: None,
+        focus_ms: 0,
+    })
+}
+
+#[tauri::command]
+fn tasks_update_text(id: i64, text: String, app: tauri::AppHandle) -> Result<(), String> {
+    db::update_task_text(id, &text)?;
+    tasks::notify_changed(&app);
+    Ok(())
+}
+
+#[tauri::command]
+fn tasks_delete(id: i64, app: tauri::AppHandle) -> Result<(), String> {
+    db::delete_task(id)?;
+    tasks::notify_changed(&app);
+    Ok(())
+}
+
+#[tauri::command]
+fn tasks_set_current(id: i64, app: tauri::AppHandle) -> Result<(), String> {
+    db::set_current_task(id)?;
+    tasks::notify_changed(&app);
+    Ok(())
+}
+
+#[tauri::command]
+fn tasks_complete(id: i64, app: tauri::AppHandle) -> Result<(), String> {
+    db::complete_task(id)?;
+    tasks::notify_changed(&app);
+    Ok(())
+}
+
+#[tauri::command]
+fn tasks_reopen(id: i64, app: tauri::AppHandle) -> Result<(), String> {
+    db::reopen_task(id)?;
+    tasks::notify_changed(&app);
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -71,7 +133,15 @@ pub fn run() {
             tracker_current,
             tracker_set_paused,
             stats_today,
-            stats_daily_totals
+            stats_daily_totals,
+            tasks_list,
+            tasks_current,
+            tasks_create,
+            tasks_update_text,
+            tasks_delete,
+            tasks_set_current,
+            tasks_complete,
+            tasks_reopen
         ])
         .setup(|app| {
             // ---- M2：初始化数据库（先于追踪，会话才有落库目标）----
@@ -85,6 +155,9 @@ pub fn run() {
                 app.listen(tracker::EVT_SESSION, move |_evt| {
                     // 事件 payload 即 Session 的 JSON；直接解析落库
                     if let Ok(v) = serde_json::from_str::<serde_json::Value>(_evt.payload()) {
+                        let counted = v["onPrimary"].as_bool().unwrap_or(false)
+                            && !v["iconic"].as_bool().unwrap_or(false)
+                            && v["countedMs"].as_i64().unwrap_or(0) > 0;
                         let _ = db::record_session(
                             v["appKey"].as_str().unwrap_or("unknown"),
                             v["appName"].as_str().unwrap_or("unknown"),
@@ -94,10 +167,12 @@ pub fn run() {
                             v["durationMs"].as_i64().unwrap_or(0),
                             v["countedMs"].as_i64().unwrap_or(0),
                             v["onPrimary"].as_bool().unwrap_or(false),
-                            v["onPrimary"].as_bool().unwrap_or(false)
-                                && !v["iconic"].as_bool().unwrap_or(false)
-                                && v["countedMs"].as_i64().unwrap_or(0) > 0,
+                            counted,
                         );
+                        // M3：counted 时长归账到当前 doing 任务
+                        if counted {
+                            tasks::credit_focus(v["countedMs"].as_i64().unwrap_or(0));
+                        }
                     }
                 });
             }
