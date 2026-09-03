@@ -4,32 +4,45 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // 低刺激深色系：偏灰蓝，不用纯黑
+        // 「暖砂」主题 —— 温暖低刺激浅色，灵感来自掌印肉垫与陪伴的柔软
+        sand: {
+          DEFAULT: '#F2EDE3', // 页面背景 · 暖砂米
+        },
+        surface: {
+          DEFAULT: '#FBF8F2', // 卡片表面 · 暖近白
+          2: '#E9E2D5',       // 次级表面 / 悬停 / 轨道
+        },
+        line: '#E2DACB',      // 分隔线
         ink: {
-          900: '#14161A',
-          800: '#1B1E24',
-          700: '#232730',
-          600: '#2C313C',
-          500: '#3A404E',
+          DEFAULT: '#2C2722', // 主文字 · 深暖棕
+          dim: '#6B635A',     // 次要文字
+          faint: '#A2998B',   // 弱文字 / 占位
         },
-        mist: {
-          DEFAULT: '#C9CFDA',
-          dim: '#8B93A3',
-          faint: '#5C6373',
+        accent: {
+          DEFAULT: '#C1753C', // 强调 · 暖杏橙
+          deep: '#A8622F',
+          soft: '#EAD2B8',    // 浅强调（徽标底 / hover 底）
         },
-        calm: {
-          DEFAULT: '#7FA6B8', // 低饱和青蓝，主强调色
-          soft: '#A7C4D0',
-        },
-        moss: '#8FAF8A', // 完成态，低饱和绿
+        paw: '#D18E7C',       // 签名色 · 肉垫粉
+        positive: '#74915C',  // 完成态 · 橄榄绿
       },
       borderRadius: {
         xl2: '14px',
       },
       fontSize: {
-        // 大字号可读性
         base2: ['15px', '22px'],
         lg2: ['18px', '26px'],
+        display: ['44px', '52px'], // 大数字 hero
+      },
+      fontFamily: {
+        sans: [
+          '"Segoe UI Variable"',
+          '"Segoe UI"',
+          '"Microsoft YaHei UI"',
+          '"Microsoft YaHei"',
+          'system-ui',
+          'sans-serif',
+        ],
       },
     },
   },

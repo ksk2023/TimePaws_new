@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 基础：禁用文本选中导致的拖拽误触（小组件尤其需要） */
+/* 基础：暖砂背景 + 温暖深棕文字；禁用文本选中导致的拖拽误触 */
 body {
-  @apply bg-ink-900 text-mist antialiased;
+  @apply bg-sand text-ink antialiased;
+  font-family: 'Segoe UI Variable', 'Segoe UI', 'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, sans-serif;
   user-select: none;
   overflow: hidden;
 }
@@ -12,6 +13,31 @@ body {
 /* 输入框允许选中 */
 input, textarea {
   user-select: text;
+}
+
+/* 数据数字统一等宽对齐，读时长/趋势更稳 */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* 柔和滚动条（浅色主题） */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #D8D0C2;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C4BBA9;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* 小组件拖拽区 */

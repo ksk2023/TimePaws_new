@@ -34,8 +34,8 @@ export default function StatsPage() {
     return (
       <section className="max-w-xl" aria-label="统计">
         <h1 className="text-xl font-semibold mb-6">统计</h1>
-        <div className="rounded-xl2 bg-ink-800 p-5 text-mist-dim">
-          数据读取失败。<button className="underline hover:text-mist" onClick={() => window.timepaws.statsDailyTotals(14).then(setRows).catch(() => setFailed(true))}>重试</button>
+        <div className="rounded-xl2 bg-surface p-5 text-ink-dim">
+          数据读取失败。<button className="underline hover:text-ink" onClick={() => window.timepaws.statsDailyTotals(14).then(setRows).catch(() => setFailed(true))}>重试</button>
         </div>
       </section>
     );
@@ -50,30 +50,30 @@ export default function StatsPage() {
     <section className="max-w-xl" aria-label="统计">
       <h1 className="text-xl font-semibold mb-6">统计</h1>
 
-      <div className="rounded-xl2 bg-ink-800 p-5">
-        <div className="text-sm text-mist-faint mb-4">最近 14 天 · 每日前台总时长</div>
+      <div className="rounded-xl2 bg-surface p-5">
+        <div className="text-sm text-ink-dim mb-4">最近 14 天 · 每日前台总时长</div>
         {data.length === 0 ? (
-          <p className="text-sm text-mist-faint">
+          <p className="text-sm text-ink-faint">
             还没有历史数据。TimePaws 会从第一次运行开始积累，明天再来看趋势。
           </p>
         ) : (
           <div className="flex items-end gap-2 h-40">
             {asc.map((r) => (
               <div key={r.dateKey} className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
-                <span className="text-[10px] text-mist-faint">{r.totalMs >= 60_000 ? fmtShort(r.totalMs) : ''}</span>
+                <span className="text-[10px] text-ink-faint">{r.totalMs >= 60_000 ? fmtShort(r.totalMs) : ''}</span>
                 <div
-                  className="w-full max-w-8 rounded-t-md bg-calm/60 hover:bg-calm transition-colors"
+                  className="w-full max-w-8 rounded-t-md bg-accent/60 hover:bg-accent transition-colors"
                   style={{ height: `${Math.max(3, (r.totalMs / maxMs) * 100)}%` }}
                   title={`${r.dateKey}：${fmtShort(r.totalMs)}`}
                 />
-                <span className="text-[10px] text-mist-faint truncate w-full text-center">{dayLabel(r.dateKey)}</span>
+                <span className="text-[10px] text-ink-faint truncate w-full text-center">{dayLabel(r.dateKey)}</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <p className="mt-4 text-xs text-mist-faint leading-relaxed">
+      <p className="mt-4 text-xs text-ink-faint leading-relaxed">
         口径：主屏前台 + 非空闲时长。空闲超过 1 分钟不计入；锁屏/最小化不算前台。
       </p>
     </section>

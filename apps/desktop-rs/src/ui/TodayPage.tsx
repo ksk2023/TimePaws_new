@@ -46,8 +46,8 @@ export default function TodayPage() {
     return (
       <section className="max-w-xl" aria-label="今日">
         <h1 className="text-xl font-semibold mb-2">今天</h1>
-        <div className="rounded-xl2 bg-ink-800 p-5 text-mist-dim">
-          数据读取失败。<button className="underline hover:text-mist" onClick={refresh}>重试</button>
+        <div className="rounded-xl2 bg-surface p-5 text-ink-dim">
+          数据读取失败。<button className="underline hover:text-ink" onClick={refresh}>重试</button>
         </div>
       </section>
     );
@@ -59,39 +59,42 @@ export default function TodayPage() {
 
   return (
     <section className="max-w-xl" aria-label="今日">
-      <h1 className="text-xl font-semibold mb-1">今天想完成什么？</h1>
-      <p className="text-sm text-mist-faint mb-6">
+      <h1 className="text-2xl font-semibold tracking-tight mb-1">今天想完成什么？</h1>
+      <p className="text-sm text-ink-dim mb-7">
         {current
-          ? `此刻：${current.appName}${current.windowTitle ? ` · ${current.windowTitle}` : ''}${current.onPrimary ? '' : '（副屏）'}`
+          ? `此刻 · ${current.appName}${current.windowTitle ? ` · ${current.windowTitle}` : ''}${current.onPrimary ? '' : '（副屏）'}`
           : '此刻没有追踪到前台活动'}
       </p>
 
-      {/* 总时长卡 */}
-      <div className="rounded-xl2 bg-ink-800 p-5 mb-4">
-        <div className="text-sm text-mist-faint mb-1">今日前台（主屏计入）</div>
-        <div className="text-3xl font-semibold text-mist">{fmtDuration(total)}</div>
-        <div className="text-xs text-mist-faint mt-1.5">
+      {/* 总时长 hero */}
+      <div className="rounded-xl2 bg-surface px-6 py-7 mb-5">
+        <div className="text-sm text-ink-dim mb-2">今日专注（主屏计入）</div>
+        <div className="text-display font-semibold text-ink tabular leading-none">
+          {fmtDuration(total)}
+        </div>
+        <div className="mt-4 inline-flex items-center gap-1.5 text-xs text-ink-dim bg-surface-2 rounded-full px-3 py-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-paw" aria-hidden />
           {summary ? `${summary.countedSessions} 段有效会话` : '加载中…'}
         </div>
       </div>
 
       {/* Top 应用 */}
-      <div className="rounded-xl2 bg-ink-800 p-5 mb-4">
-        <div className="text-sm text-mist-faint mb-3">应用分布</div>
+      <div className="rounded-xl2 bg-surface p-5 mb-4">
+        <div className="text-sm text-ink-dim mb-3">应用分布</div>
         {topApps.length === 0 ? (
-          <p className="text-sm text-mist-faint">还没有数据。正常使用电脑，几分钟后回来看。</p>
+          <p className="text-sm text-ink-faint">还没有数据。正常使用电脑，几分钟后回来看。</p>
         ) : (
           <ul className="space-y-2.5">
             {topApps.map((a) => (
               <li key={a.app_key} className="flex items-center gap-3">
-                <span className="w-28 shrink-0 truncate text-base2 text-mist-dim" title={a.app_name}>{a.app_name}</span>
-                <div className="flex-1 h-2 rounded-full bg-ink-600 overflow-hidden">
+                <span className="w-28 shrink-0 truncate text-base2 text-ink-dim" title={a.app_name}>{a.app_name}</span>
+                <div className="flex-1 h-2 rounded-full bg-surface-2 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-calm/70"
+                    className="h-full rounded-full bg-accent/70"
                     style={{ width: `${Math.max(4, (a.total_ms / maxMs) * 100)}%` }}
                   />
                 </div>
-                <span className="w-14 shrink-0 text-right text-sm text-mist-faint">{fmtShort(a.total_ms)}</span>
+                <span className="w-14 shrink-0 text-right text-sm text-ink-faint">{fmtShort(a.total_ms)}</span>
               </li>
             ))}
           </ul>
@@ -99,18 +102,18 @@ export default function TodayPage() {
       </div>
 
       {/* 最近活动 */}
-      <div className="rounded-xl2 bg-ink-800 p-5">
-        <div className="text-sm text-mist-faint mb-3">最近活动</div>
+      <div className="rounded-xl2 bg-surface p-5">
+        <div className="text-sm text-ink-dim mb-3">最近活动</div>
         {(summary?.recent?.length ?? 0) === 0 ? (
-          <p className="text-sm text-mist-faint">暂无记录（会话 ≥5 秒才显示）。</p>
+          <p className="text-sm text-ink-faint">暂无记录（会话 ≥5 秒才显示）。</p>
         ) : (
-          <ul className="divide-y divide-ink-600/60">
+          <ul className="divide-y divide-line/60">
             {summary!.recent.map((r, i) => (
               <li key={i} className="py-2 flex items-baseline gap-3 min-w-0">
-                <span className="text-xs text-mist-faint shrink-0 w-9">{fmtClock(r.ended_at)}</span>
-                <span className="text-sm text-mist-dim shrink-0 w-20 truncate" title={r.app_name}>{r.app_name}</span>
-                <span className="text-sm text-mist truncate flex-1" title={r.title}>{r.title || '（无标题）'}</span>
-                <span className="text-xs text-mist-faint shrink-0">{fmtShort(r.duration_ms)}</span>
+                <span className="text-xs text-ink-faint shrink-0 w-9">{fmtClock(r.ended_at)}</span>
+                <span className="text-sm text-ink-dim shrink-0 w-20 truncate" title={r.app_name}>{r.app_name}</span>
+                <span className="text-sm text-ink truncate flex-1" title={r.title}>{r.title || '（无标题）'}</span>
+                <span className="text-xs text-ink-faint shrink-0">{fmtShort(r.duration_ms)}</span>
               </li>
             ))}
           </ul>

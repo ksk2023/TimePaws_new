@@ -29,29 +29,35 @@ export default function App() {
   return (
     <div className="flex h-screen">
       {/* 左侧导航 */}
-      <nav className="w-44 shrink-0 bg-ink-800 p-3 flex flex-col gap-1" aria-label="主导航">
-        <div className="px-2 py-3">
-          <div className="text-lg2 font-semibold text-mist">TimePaws</div>
-          <div className="text-sm text-mist-faint">陪你回到计划</div>
+      <nav className="w-56 shrink-0 bg-surface border-r border-line p-4 flex flex-col gap-1" aria-label="主导航">
+        <div className="px-2 pt-2 pb-4">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-paw shrink-0" aria-hidden />
+            <span className="text-lg2 font-semibold text-ink tracking-tight">TimePaws</span>
+          </div>
+          <div className="text-sm text-ink-faint mt-1 pl-5">陪你回到计划</div>
         </div>
         {NAV.map((item) => (
           <button
             key={item.key}
             onClick={() => item.ready && setActive(item.key)}
-            className={`text-left rounded-xl2 px-3 py-2.5 text-base2 transition-colors ${
+            className={`relative text-left rounded-xl2 pl-3 pr-3 py-2.5 text-base2 transition-colors ${
               active === item.key
-                ? 'bg-ink-600 text-mist'
+                ? 'bg-surface-2 text-ink font-medium'
                 : item.ready
-                  ? 'text-mist-dim hover:bg-ink-700 hover:text-mist'
-                  : 'text-mist-faint cursor-default'
+                  ? 'text-ink-dim hover:bg-surface-2 hover:text-ink'
+                  : 'text-ink-faint cursor-default'
             }`}
           >
+            {active === item.key && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-accent" aria-hidden />
+            )}
             {item.label}
-            {!item.ready && <span className="ml-1.5 text-xs text-mist-faint">即将到来</span>}
+            {!item.ready && <span className="ml-1.5 text-xs text-ink-faint">即将到来</span>}
           </button>
         ))}
-        <div className="mt-auto px-2 text-xs text-mist-faint">
-          {pongAt ? `桥已连接 ${new Date(pongAt).toLocaleTimeString()}` : '桥未连接'}
+        <div className="mt-auto px-2 pt-4 text-xs text-ink-faint border-t border-line">
+          {pongAt ? `已连接 · ${new Date(pongAt).toLocaleTimeString()}` : '连接中…'}
         </div>
       </nav>
 

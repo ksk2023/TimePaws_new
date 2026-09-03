@@ -18,18 +18,18 @@ function Toggle(props: { checked: boolean; onChange: (v: boolean) => void; label
   return (
     <label className={`flex items-center justify-between py-3 ${props.disabled ? 'opacity-50' : ''}`}>
       <span className="min-w-0 pr-4">
-        <span className="block text-base2 text-mist">{props.label}</span>
-        {props.hint && <span className="block text-xs text-mist-faint mt-0.5">{props.hint}</span>}
+        <span className="block text-base2 text-ink">{props.label}</span>
+        {props.hint && <span className="block text-xs text-ink-faint mt-0.5">{props.hint}</span>}
       </span>
       <button
         role="switch"
         aria-checked={props.checked}
         disabled={props.disabled}
         onClick={() => !props.disabled && props.onChange(!props.checked)}
-        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${props.checked ? 'bg-calm' : 'bg-ink-600'}`}
+        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${props.checked ? 'bg-accent' : 'bg-surface-2'}`}
       >
         <span
-          className={`absolute top-0.5 w-5 h-5 rounded-full bg-mist transition-all ${props.checked ? 'left-[22px]' : 'left-0.5'}`}
+          className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${props.checked ? 'left-[22px]' : 'left-0.5'}`}
         />
       </button>
     </label>
@@ -63,7 +63,7 @@ export default function SettingsPage() {
     return (
       <section className="max-w-xl" aria-label="设置">
         <h1 className="text-xl font-semibold mb-6">设置</h1>
-        <p className="text-sm text-mist-faint">加载中…</p>
+        <p className="text-sm text-ink-faint">加载中…</p>
       </section>
     );
   }
@@ -73,13 +73,13 @@ export default function SettingsPage() {
       <h1 className="text-xl font-semibold mb-6">设置</h1>
 
       {notice && (
-        <div className="mb-4 rounded-xl2 bg-calm/15 border border-calm/40 px-4 py-2.5 text-sm text-calm">
+        <div className="mb-4 rounded-xl2 bg-accent/15 border border-accent/40 px-4 py-2.5 text-sm text-accent">
           {notice}
         </div>
       )}
 
       {/* 追踪 */}
-      <div className="rounded-xl2 bg-ink-800 px-5 mb-4 divide-y divide-ink-600/50">
+      <div className="rounded-xl2 bg-surface px-5 mb-4 divide-y divide-line/50">
         <Toggle
           checked={!s.trackingPaused}
           onChange={(v) => void patch({ trackingPaused: !v })}
@@ -88,8 +88,8 @@ export default function SettingsPage() {
         />
         <div className="py-3">
           <div className="flex items-center justify-between">
-            <span className="text-base2 text-mist">空闲阈值</span>
-            <span className="text-sm text-mist-faint">{Math.round(s.idleTimeoutMs / 1000)} 秒</span>
+            <span className="text-base2 text-ink">空闲阈值</span>
+            <span className="text-sm text-ink-faint">{Math.round(s.idleTimeoutMs / 1000)} 秒</span>
           </div>
           <input
             type="range"
@@ -98,14 +98,14 @@ export default function SettingsPage() {
             step={5}
             value={Math.round(s.idleTimeoutMs / 1000)}
             onChange={(e) => void patch({ idleTimeoutMs: Number(e.target.value) * 1000 })}
-            className="w-full mt-2 accent-calm"
+            className="w-full mt-2 accent-accent"
           />
-          <p className="text-xs text-mist-faint mt-1">无键鼠输入超过该时长，停止计时长（10s–5min）。</p>
+          <p className="text-xs text-ink-faint mt-1">无键鼠输入超过该时长，停止计时长（10s–5min）。</p>
         </div>
       </div>
 
       {/* 提醒 */}
-      <div className="rounded-xl2 bg-ink-800 px-5 mb-4 divide-y divide-ink-600/50">
+      <div className="rounded-xl2 bg-surface px-5 mb-4 divide-y divide-line/50">
         <Toggle
           checked={!s.remindersPaused}
           onChange={(v) => void patch({ remindersPaused: !v })}
@@ -114,8 +114,8 @@ export default function SettingsPage() {
         />
         <div className="py-3">
           <div className="flex items-center justify-between">
-            <span className="text-base2 text-mist">专注休息间隔</span>
-            <span className="text-sm text-mist-faint">{Math.round((s.reminders.heartbeatFocusMs ?? 3_000_000) / 60_000)} 分钟</span>
+            <span className="text-base2 text-ink">专注休息间隔</span>
+            <span className="text-sm text-ink-faint">{Math.round((s.reminders.heartbeatFocusMs ?? 3_000_000) / 60_000)} 分钟</span>
           </div>
           <input
             type="range"
@@ -124,14 +124,14 @@ export default function SettingsPage() {
             step={5}
             value={Math.round((s.reminders.heartbeatFocusMs ?? 3_000_000) / 60_000)}
             onChange={(e) => void patch({ reminders: { ...s.reminders, heartbeatFocusMs: Number(e.target.value) * 60_000 } })}
-            className="w-full mt-2 accent-calm"
+            className="w-full mt-2 accent-accent"
           />
         </div>
         <div className="py-3 flex items-center justify-between">
-          <span className="text-base2 text-mist">预览一条提醒</span>
+          <span className="text-base2 text-ink">预览一条提醒</span>
           <button
             onClick={() => void window.timepaws.remindersTest()}
-            className="rounded-lg bg-ink-600 hover:bg-ink-600/70 px-3 py-1.5 text-sm text-mist-dim transition-colors"
+            className="rounded-lg bg-surface-2 hover:bg-surface-2/70 px-3 py-1.5 text-sm text-ink-dim transition-colors"
           >
             预览
           </button>
@@ -139,7 +139,7 @@ export default function SettingsPage() {
       </div>
 
       {/* 系统 */}
-      <div className="rounded-xl2 bg-ink-800 px-5 mb-4">
+      <div className="rounded-xl2 bg-surface px-5 mb-4">
         <Toggle
           checked={s.autostart}
           onChange={(v) => void patch({ autostart: v })}
@@ -149,11 +149,11 @@ export default function SettingsPage() {
       </div>
 
       {/* 数据与隐私 */}
-      <div className="rounded-xl2 bg-ink-800 px-5 py-4 mb-4">
-        <div className="text-sm text-mist-faint mb-3">数据（全部只存在本机）</div>
-        <div className="text-sm text-mist-dim space-y-1 mb-4">
+      <div className="rounded-xl2 bg-surface px-5 py-4 mb-4">
+        <div className="text-sm text-ink-dim mb-3">数据（全部只存在本机）</div>
+        <div className="text-sm text-ink-dim space-y-1 mb-4">
           <div>{stats ? `${stats.sessions} 段会话 · 覆盖 ${stats.days} 天 · ${stats.tasks} 个任务` : '—'}</div>
-          {stats && <div className="text-xs text-mist-faint break-all">{stats.dbFile}</div>}
+          {stats && <div className="text-xs text-ink-faint break-all">{stats.dbFile}</div>}
         </div>
         <div className="flex gap-2">
           <button
@@ -161,7 +161,7 @@ export default function SettingsPage() {
               const r = await window.timepaws.dataExport();
               flash(`已导出 ${r.sessions} 段会话到 exports 目录`);
             }}
-            className="rounded-lg bg-ink-600 hover:bg-ink-600/70 px-4 py-2 text-sm text-mist-dim transition-colors"
+            className="rounded-lg bg-surface-2 hover:bg-surface-2/70 px-4 py-2 text-sm text-ink-dim transition-colors"
           >
             导出全部数据（JSON）
           </button>
@@ -174,13 +174,13 @@ export default function SettingsPage() {
                   refresh();
                   flash(`已清空 ${r.sessions} 段会话与聚合数据（任务保留）`);
                 }}
-                className="rounded-lg bg-red-500/80 hover:bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors"
+                className="rounded-lg bg-red-600 hover:bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors"
               >
                 确认清空
               </button>
               <button
                 onClick={() => setConfirmPurge(false)}
-                className="rounded-lg bg-ink-600 px-4 py-2 text-sm text-mist-dim"
+                className="rounded-lg bg-surface-2 px-4 py-2 text-sm text-ink-dim"
               >
                 取消
               </button>
@@ -188,16 +188,16 @@ export default function SettingsPage() {
           ) : (
             <button
               onClick={() => setConfirmPurge(true)}
-              className="rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 px-4 py-2 text-sm transition-colors"
+              className="rounded-lg border border-red-600/50 text-red-600 hover:bg-red-600/10 px-4 py-2 text-sm transition-colors"
             >
               清空追踪数据
             </button>
           )}
         </div>
-        <p className="text-xs text-mist-faint mt-3">清空只删会话/统计/事件流，任务默认保留；导出包含全部内容。</p>
+        <p className="text-xs text-ink-faint mt-3">清空只删会话/统计/事件流，任务默认保留；导出包含全部内容。</p>
       </div>
 
-      <p className="text-xs text-mist-faint leading-relaxed">
+      <p className="text-xs text-ink-faint leading-relaxed">
         TimePaws 不联网、不上传任何数据。标题仅在本机数据库中用于展示，可随时清空或导出后删除。
       </p>
     </section>

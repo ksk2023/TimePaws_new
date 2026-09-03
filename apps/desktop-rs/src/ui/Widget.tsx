@@ -48,13 +48,13 @@ export default function Widget() {
 
       if (collapsed) {
     return (
-      <div className="h-full flex items-center bg-ink-800/95 rounded-xl2 border border-ink-600 shadow-lg">
+      <div className="h-full flex items-center bg-surface/95 rounded-xl2 border border-line shadow-lg">
         <div className="drag-region flex-1 flex items-center px-3 gap-2 min-w-0">
-          <span className="w-2 h-2 rounded-full bg-calm shrink-0" aria-hidden />
-          <span className="text-sm text-mist-dim truncate">{task ? task.text : '还没有当前任务'}</span>
+          <span className="w-2 h-2 rounded-full bg-accent shrink-0" aria-hidden />
+          <span className="text-sm text-ink-dim truncate">{task ? task.text : '还没有当前任务'}</span>
         </div>
         <button
-          className="no-drag px-2.5 h-full text-mist-dim hover:text-mist"
+          className="no-drag px-2.5 h-full text-ink-dim hover:text-ink"
           onClick={() => window.timepaws.widgetToggleCollapse()}
           aria-label="展开小组件"
         >
@@ -65,13 +65,13 @@ export default function Widget() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-ink-800/95 rounded-xl2 border border-ink-600 shadow-lg overflow-hidden">
+    <div className="h-full flex flex-col bg-surface/95 rounded-xl2 border border-line shadow-lg overflow-hidden">
       {/* 标题栏：可拖拽 */}
       <div className="drag-region flex items-center px-3 pt-2.5 pb-1 gap-2">
-        <span className="w-2 h-2 rounded-full bg-calm shrink-0" aria-hidden />
-        <span className="text-xs font-medium text-mist-dim">TimePaws</span>
+        <span className="w-2 h-2 rounded-full bg-accent shrink-0" aria-hidden />
+        <span className="text-xs font-medium text-ink-dim">TimePaws</span>
         <button
-          className="no-drag ml-auto w-6 h-6 rounded-md text-mist-faint hover:text-mist hover:bg-ink-600"
+          className="no-drag ml-auto w-6 h-6 rounded-md text-ink-faint hover:text-ink hover:bg-surface-2"
           onClick={() => window.timepaws.widgetToggleCollapse()}
           aria-label="折叠小组件"
         >
@@ -83,19 +83,19 @@ export default function Widget() {
       <div className="px-3 pb-1">
         {task ? (
           <>
-            <div className="text-lg2 font-semibold text-mist leading-snug truncate" title={task.text}>
+            <div className="text-lg2 font-semibold text-ink leading-snug truncate" title={task.text}>
               {task.text}
             </div>
-            <div className="text-xs text-mist-faint mt-0.5">
+            <div className="text-xs text-ink-faint mt-0.5">
               当前任务{taskFocusMin >= 1 ? ` · 专注 ${taskFocusMin}m` : ' · 开始你的第一步'}
             </div>
           </>
         ) : (
           <>
-            <div className="text-lg2 font-semibold text-mist leading-snug">
+            <div className="text-lg2 font-semibold text-ink leading-snug">
               还没有任务
             </div>
-            <div className="text-xs text-mist-faint mt-0.5">
+            <div className="text-xs text-ink-faint mt-0.5">
               打开主窗口写下第一件事
             </div>
           </>
@@ -103,7 +103,7 @@ export default function Widget() {
       </div>
 
       {/* 底部：今日前台分钟 + 最近应用 */}
-      <div className="mt-auto px-3 pb-2.5 flex items-center gap-3 text-xs text-mist-faint">
+      <div className="mt-auto px-3 pb-2.5 flex items-center gap-3 text-xs text-ink-faint">
         <span>今日前台 {summary ? totalLabel : '—'}</span>
         <span className="truncate" title="当前应用">{currentApp}</span>
       </div>
