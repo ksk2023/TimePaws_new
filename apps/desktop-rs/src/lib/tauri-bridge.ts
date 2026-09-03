@@ -9,6 +9,7 @@ type Cb = () => void;
 
 const tasksChangedCbs = new Set<Cb>();
 let sessionCb: ((s: unknown) => void) | null = null;
+let overlayPayloadCb: ((p: unknown) => void) | null = null;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parse<T>(v: any): T {
@@ -48,12 +49,13 @@ export async function installAnchorBridge(): Promise<void> {
       tasksChangedCbs.add(cb);
     },
 
-    // M4+ 预留：设置/提醒/数据管理
-    remindersConfig: () => Promise.resolve({}),
-    remindersUpdateConfig: (p: Record<string, number>) => Promise.resolve(p),
-    remindersSetPaused: (_paused: boolean) => Promise.resolve(),
-    remindersSnoozeAll: (_ms?: number) => Promise.resolve(),
-    remindersTest: () => Promise.resolve(),
+    // M4：提醒/设置/数据管理
+    remindersConfig: () => invoke<Record<string, number>>('reminders_config'),
+    remindersUpdateConfig: (p: Record<string, number>) =>
+      invoke<Record<string, number>>('reminders_update_config', { patch: p }),
+    remindersSetPaused: (paused: boolean) => invoke<void>('reminders_set_paused', { paused }),
+    remindersSnoozeAll: (ms?: number) => invoke<void>('reminders_snooze_all', { ms: ms ?? null }),
+    remindersTest: () => invoke<void>('reminders_test'),
     settingsGet: () => Promise.resolve({}),
     settingsUpdate: (p: Record<string, unknown>) => Promise.resolve(p),
     dataExport: () =>
@@ -68,6 +70,13 @@ export async function installAnchorBridge(): Promise<void> {
       }),
     dataStats: () =>
       Promise.resolve({ sessions: 0, days: 0, tasks: 0, dbFile: '' }),
+
+    // M4：浮层（#/overlay 路由消费）
+    onOverlayPayload: (cb: (p: { kind: string; title: string; body: string }) => void) => {
+      overlayPayloadCb = cb as (p: unknown) => void;
+    },
+    overlaySnooze: () => invoke('overlay_snooze'),
+    overlayDismiss: () => invoke('overlay_dismiss'),
   };
 
   (window as unknown as { anchor: unknown }).anchor = anchor;
@@ -78,5 +87,8 @@ export async function installAnchorBridge(): Promise<void> {
   });
   void listen('tasks://changed', () => {
     tasksChangedCbs.forEach((cb) => cb());
+  });
+  void listen<unknown>('anchor:overlay:payload', (e) => {
+    overlayPayloadCb?.(e.payload);
   });
 }

@@ -17,6 +17,21 @@
         "minHeight": 520,
         "visible": false,
         "center": true
+      },
+      {
+        "label": "overlay",
+        "title": "anchor-overlay",
+        "url": "index.html#/overlay",
+        "width": 320,
+        "height": 148,
+        "visible": true,
+        "decorations": false,
+        "resizable": false,
+        "maximizable": false,
+        "minimizable": false,
+        "skipTaskbar": true,
+        "alwaysOnTop": true,
+        "shadow": true
       }
     ],
     "security": {

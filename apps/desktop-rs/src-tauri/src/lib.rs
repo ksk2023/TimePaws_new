@@ -7,9 +7,16 @@ use tauri::{
     Listener, Manager,
 };
 
+use std::sync::Mutex;
+
 pub mod db;
+pub mod overlay;
+pub mod reminders;
 pub mod tasks;
 pub mod tracker;
+
+/// M4：上一条快照的空闲毫秒（idle_back 检测用）
+static IDLE_PREV: Mutex<u64> = Mutex::new(0);
 
 /// M0 IPC：连通性探测（对应 Electron 版 anchor/ping）
 #[tauri::command]
@@ -39,6 +46,52 @@ fn toggle_main_window(app: tauri::AppHandle) {
 #[tauri::command]
 fn tracker_current() -> Option<tracker::Snapshot> {
     tracker::current_snapshot()
+}
+
+// ---- M4 IPC：提醒 ----
+
+#[tauri::command]
+fn reminders_config() -> serde_json::Value {
+    let c = reminders::current_config();
+    serde_json::to_value(&c).unwrap_or(serde_json::json!({}))
+}
+
+#[tauri::command]
+fn reminders_update_config(patch: serde_json::Value) -> serde_json::Value {
+    let c = reminders::update_config(patch);
+    serde_json::to_value(&c).unwrap_or(serde_json::json!({}))
+}
+
+#[tauri::command]
+fn reminders_set_paused(paused: bool, app: tauri::AppHandle) {
+    reminders::set_paused(paused, &app);
+}
+
+#[tauri::command]
+fn reminders_snooze_all(ms: Option<i64>) {
+    reminders::snooze_all(ms.unwrap_or(20 * 60_000));
+}
+
+#[tauri::command]
+fn reminders_test(app: tauri::AppHandle) {
+    // 设置页「预览一条提醒」：直接触发一条 heartbeat 样例
+    reminders::fire_test(
+        &app,
+        "预览提醒",
+        "这是一条提醒样例。到点时它会从屏幕右下角滑入，不会抢你的键盘焦点。",
+    );
+}
+
+#[tauri::command]
+fn overlay_snooze(app: tauri::AppHandle) {
+    // 「稍后提醒」：全部规则静默 20 分钟 + 隐藏浮层
+    reminders::snooze_all(20 * 60_000);
+    reminders::hide_overlay(&app);
+}
+
+#[tauri::command]
+fn overlay_dismiss(app: tauri::AppHandle) {
+    reminders::hide_overlay(&app);
 }
 
 /// M1 IPC：追踪开关（对应 Electron 版设置页「暂停追踪」）
@@ -141,7 +194,14 @@ pub fn run() {
             tasks_delete,
             tasks_set_current,
             tasks_complete,
-            tasks_reopen
+            tasks_reopen,
+            reminders_config,
+            reminders_update_config,
+            reminders_set_paused,
+            reminders_snooze_all,
+            reminders_test,
+            overlay_snooze,
+            overlay_dismiss
         ])
         .setup(|app| {
             // ---- M2：初始化数据库（先于追踪，会话才有落库目标）----
@@ -151,7 +211,7 @@ pub fn run() {
 
             // ---- M2：会话结算 → 落库（桥接 tracker 事件）----
             {
-                let _handle = app.handle().clone();
+                let handle = app.handle().clone();
                 app.listen(tracker::EVT_SESSION, move |_evt| {
                     // 事件 payload 即 Session 的 JSON；直接解析落库
                     if let Ok(v) = serde_json::from_str::<serde_json::Value>(_evt.payload()) {
@@ -173,7 +233,73 @@ pub fn run() {
                         if counted {
                             tasks::credit_focus(v["countedMs"].as_i64().unwrap_or(0));
                         }
+                        // M4：提醒规则评估（heartbeat / drift / switch_storm）
+                        reminders::on_session_ended(
+                            &handle,
+                            v["appKey"].as_str().unwrap_or("unknown"),
+                            v["onPrimary"].as_bool().unwrap_or(false),
+                            counted,
+                            v["countedMs"].as_i64().unwrap_or(0),
+                        );
                     }
+                });
+            }
+
+            // ---- M4：会话/快照 → 空闲恢复检测（idle_back）----
+            {
+                let handle = app.handle().clone();
+                app.listen(tracker::EVT_SNAPSHOT, move |evt| {
+                    // 快照 idle_ms 从 >60s 回落到 <60s 的瞬间 = 恢复活动
+                    if let Ok(v) = serde_json::from_str::<serde_json::Value>(evt.payload()) {
+                        let idle = v["idleMs"].as_u64().unwrap_or(0);
+                        let mut prev = IDLE_PREV.lock().expect("idle_prev poisoned");
+                        if *prev >= 60_000 && idle < 60_000 {
+                            let before = *prev as i64;
+                            *prev = idle;
+                            drop(prev);
+                            reminders::on_activity_resumed(&handle, before);
+                        } else {
+                            *prev = idle;
+                        }
+                    }
+                });
+            }
+
+            // ---- M4：每分钟 tick（drift 需要「不切换也评估」）----
+            {
+                let handle = app.handle().clone();
+                std::thread::spawn(move || loop {
+                    std::thread::sleep(std::time::Duration::from_secs(60));
+                    reminders::on_minute_tick(&handle);
+                });
+            }
+
+            // ---- M4：初始化浮层（tauri.conf.json 静态声明，捕获 HWND + 主屏几何）----
+            if let Err(e) = overlay::init_overlay(app.handle()) {
+                eprintln!("[overlay] init fail: {e}");
+            }
+
+            // 浮层以 visible:true 启动（WebView2 标准初始化路径保证页面加载），
+            // 事件循环跑起来后延迟用 Win32 隐藏（tao dispatcher 的 hide 从非主线程
+            // 调用不可靠，全部走 overlay::show_on_main / hide_on_main 的原生路径）。
+            {
+                let handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_millis(1500));
+                    overlay::hide_on_main(&handle);
+                });
+            }
+
+            // ---- 开发烟测：ANCHOR_TEST_FIRE=1 → 启动 8s 后触发一条预览提醒 ----
+            if std::env::var("ANCHOR_TEST_FIRE").is_ok() {
+                let handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_secs(8));
+                    reminders::fire_test(
+                        &handle,
+                        "烟测提醒",
+                        "M4 浮层链路验证：触发 → 显示 → 25s 自动隐藏。",
+                    );
                 });
             }
 
