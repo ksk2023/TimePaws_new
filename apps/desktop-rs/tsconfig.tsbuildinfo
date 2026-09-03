@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/lib/api.ts","./src/store/ui.ts","./src/ui/app.tsx","./src/ui/overlay.tsx","./src/ui/settingspage.tsx","./src/ui/statspage.tsx","./src/ui/taskspage.tsx","./src/ui/todaypage.tsx","./src/ui/widget.tsx"],"version":"5.9.3"}

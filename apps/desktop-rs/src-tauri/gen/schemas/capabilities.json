@@ -1,0 +1,1 @@
+{"main-capability":{"identifier":"main-capability","description":"M0 主窗口基础权限：核心事件 + 自定义命令","local":true,"windows":["main"],"permissions":["core:default","core:window:allow-show","core:window:allow-hide","core:window:allow-set-focus","core:window:allow-is-visible"]}}

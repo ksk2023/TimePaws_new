@@ -1,0 +1,26 @@
+[package]
+name = "anchor-desktop"
+version = "0.1.0"
+description = "Anchor 锚点 — 本地优先的 Windows 桌面 ADHD 陪伴应用 (Tauri 2)"
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "anchor_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = "0.4"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

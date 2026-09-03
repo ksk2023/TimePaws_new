@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 基础：禁用文本选中导致的拖拽误触（小组件尤其需要） */
+body {
+  @apply bg-ink-900 text-mist antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* 输入框允许选中 */
+input, textarea {
+  user-select: text;
+}
+
+/* 小组件拖拽区 */
+.drag-region {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
