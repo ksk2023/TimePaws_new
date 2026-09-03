@@ -29,18 +29,35 @@ static MON_W: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0
 static MON_H: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
 static MON_SCALE: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(100); // percent
 
-/// setup 阶段调用：捕获 HWND 与主屏几何（纯读取，无 dispatcher 派发）
-pub fn init_overlay(app: &tauri::AppHandle) -> Result<(), String> {
-    let win = app
-        .get_webview_window("overlay")
-        .ok_or_else(|| "overlay window missing from config".to_string())?;
+/// 启动守护：浮层以 visible:true 启动（保证 WebView2 正常初始化），
+/// 轮询等待窗口 HWND 真正就绪后，捕获 HWND + 主屏几何并立即隐藏。
+/// （setup 阶段窗口尚未创建完成，同步捕获会失败 → 必须延迟轮询。）
+/// 启动守护：浮层以 visible:false 启动（启动即隐藏），
+/// 轮询等待窗口 HWND 就绪后捕获 HWND + 主屏几何，供 fire 时显示。
+pub fn spawn_startup_hide(app: tauri::AppHandle) {
+    std::thread::spawn(move || {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+        loop {
+            if let Some(win) = app.get_webview_window("overlay") {
+                if let Ok(hwnd) = win.hwnd() {
+                    if !hwnd.0.is_null() {
+                        OVERLAY_HWND.store(hwnd.0 as isize, std::sync::atomic::Ordering::SeqCst);
+                        capture_monitor(&app);
+                        return;
+                    }
+                }
+            }
+            if std::time::Instant::now() >= deadline {
+                eprintln!("[overlay] HWND 捕获超时");
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(200));
+        }
+    });
+}
 
-    let hwnd = win
-        .hwnd()
-        .map_err(|e| format!("hwnd unavailable: {e}"))?
-        .0 as isize;
-    OVERLAY_HWND.store(hwnd, std::sync::atomic::Ordering::SeqCst);
-
+/// 捕获主屏几何（供定位用）
+fn capture_monitor(app: &tauri::AppHandle) {
     if let Ok(Some(m)) = app.primary_monitor() {
         MON_X.store(m.position().x, std::sync::atomic::Ordering::SeqCst);
         MON_Y.store(m.position().y, std::sync::atomic::Ordering::SeqCst);
@@ -51,7 +68,21 @@ pub fn init_overlay(app: &tauri::AppHandle) -> Result<(), String> {
             std::sync::atomic::Ordering::SeqCst,
         );
     }
-    Ok(())
+}
+
+/// 兜底捕获：若 HWND 尚未就绪，现场尝试捕获（fire 路径调用）
+fn ensure_hwnd(app: &tauri::AppHandle) -> isize {
+    let mut hwnd = OVERLAY_HWND.load(std::sync::atomic::Ordering::SeqCst);
+    if hwnd == 0 {
+        if let Some(win) = app.get_webview_window("overlay") {
+            if let Ok(h) = win.hwnd() {
+                hwnd = h.0 as isize;
+                OVERLAY_HWND.store(hwnd, std::sync::atomic::Ordering::SeqCst);
+                capture_monitor(app);
+            }
+        }
+    }
+    hwnd
 }
 
 /// 计算浮层逻辑坐标（主屏右下角）
@@ -77,7 +108,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 
 /// 显示浮层（右下角定位 + 不抢焦点）—— 纯 Win32，任意线程可调
 pub fn show_on_main(app: &tauri::AppHandle) {
-    let hwnd = OVERLAY_HWND.load(std::sync::atomic::Ordering::SeqCst);
+    let hwnd = ensure_hwnd(app);
     if hwnd == 0 {
         return;
     }
@@ -98,11 +129,10 @@ pub fn show_on_main(app: &tauri::AppHandle) {
         );
         let _ = ShowWindow(h, SW_SHOWNA);
     }
-    let _ = app; // 保留签名一致性（供 tauri 命令路径调用）
 }
 
 /// 隐藏浮层 —— 纯 Win32，任意线程可调
-pub fn hide_on_main(app: &tauri::AppHandle) {
+pub fn hide_on_main(_app: &tauri::AppHandle) {
     let hwnd = OVERLAY_HWND.load(std::sync::atomic::Ordering::SeqCst);
     if hwnd == 0 {
         return;
@@ -110,5 +140,4 @@ pub fn hide_on_main(app: &tauri::AppHandle) {
     unsafe {
         let _ = ShowWindow(HWND(hwnd as *mut _), SW_HIDE);
     }
-    let _ = app;
 }

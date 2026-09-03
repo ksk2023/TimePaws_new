@@ -274,21 +274,8 @@ pub fn run() {
                 });
             }
 
-            // ---- M4：初始化浮层（tauri.conf.json 静态声明，捕获 HWND + 主屏几何）----
-            if let Err(e) = overlay::init_overlay(app.handle()) {
-                eprintln!("[overlay] init fail: {e}");
-            }
-
-            // 浮层以 visible:true 启动（WebView2 标准初始化路径保证页面加载），
-            // 事件循环跑起来后延迟用 Win32 隐藏（tao dispatcher 的 hide 从非主线程
-            // 调用不可靠，全部走 overlay::show_on_main / hide_on_main 的原生路径）。
-            {
-                let handle = app.handle().clone();
-                std::thread::spawn(move || {
-                    std::thread::sleep(std::time::Duration::from_millis(1500));
-                    overlay::hide_on_main(&handle);
-                });
-            }
+            // ---- M4：浮层启动守护（visible:true 启动，窗口就绪后捕获 HWND 并隐藏）----
+            overlay::spawn_startup_hide(app.handle().clone());
 
             // ---- 开发烟测：ANCHOR_TEST_FIRE=1 → 启动 8s 后触发一条预览提醒 ----
             if std::env::var("ANCHOR_TEST_FIRE").is_ok() {
