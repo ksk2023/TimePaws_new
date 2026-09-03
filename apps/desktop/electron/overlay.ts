@@ -11,6 +11,7 @@
  */
 import { BrowserWindow, app, screen } from 'electron';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const OVERLAY_W = 320;
 const OVERLAY_H = 148;
@@ -58,7 +59,8 @@ export async function showOverlay(payload: OverlayPayload): Promise<void> {
       },
     });
     overlayWindow.setAlwaysOnTop(true, 'screen-saver');
-    void overlayWindow.loadURL(`file://${path.join(__dirname, '../dist/index.html')}#/overlay`);
+    // pathToFileURL 生成 file:///D:\... 三斜杠形式（Windows 盘符不能被当主机名）
+    void overlayWindow.loadURL(`${pathToFileURL(path.join(__dirname, '../dist/index.html')).href}#/overlay`);
     // 隐藏期预加载完成后再显示
     await new Promise<void>((resolve) => {
       if (!overlayWindow) return resolve();

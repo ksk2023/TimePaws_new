@@ -7,6 +7,7 @@
  */
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createTray } from './tray';
 import { createWidgetWindow, getWidgetWindow, toggleWidgetCollapse } from './widget';
 import { registerDisplayWatch } from './display';
@@ -68,11 +69,16 @@ process.on('unhandledRejection', (reason) => {
 
 let mainWindow: BrowserWindow | null = null;
 
-/** 主窗口加载地址：优先 Vite dev server，连不上则回退 file:// 构建产物 */
+/** 主窗口加载地址：优先 Vite dev server，连不上则回退本地构建产物
+ *
+ * 注意：Windows 下必须用 pathToFileURL 生成 file:///D:\... 三斜杠形式。
+ * 手写 `file://${absolutePath}` 会把盘符 `D:` 当成主机名，导致打包版
+ * 加载 asar 内资源时报 ERR_FAILED (-2) 白屏（dev 走 http 不会触发）。
+ */
 async function resolveIndexUrl(): Promise<string> {
   const devUrl = 'http://127.0.0.1:5183/';
   if (isDev && (await probeDevServer(devUrl))) return devUrl;
-  return `file://${path.join(__dirname, '../dist/index.html')}`;
+  return pathToFileURL(path.join(__dirname, '../dist/index.html')).href;
 }
 
 /** 探测 Vite dev server 是否可用（500ms 超时） */

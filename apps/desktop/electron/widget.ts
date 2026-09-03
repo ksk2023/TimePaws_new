@@ -11,6 +11,7 @@
 import { app, BrowserWindow, screen } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const WIDGET_W = 280;
 const WIDGET_H = 120;
@@ -116,7 +117,8 @@ export async function createWidgetWindow(): Promise<BrowserWindow> {
 
   // 加载策略与主窗口一致：优先 Vite dev server，连不上回退 file:// 构建产物（hash 路由 #/widget）
   const isDev = !app.isPackaged;
-  const fileUrl = `file://${path.join(__dirname, '../dist/index.html')}#/widget`;
+  // pathToFileURL 生成 file:///D:\... 三斜杠形式（Windows 盘符不能被当主机名）
+  const fileUrl = `${pathToFileURL(path.join(__dirname, '../dist/index.html')).href}#/widget`;
   let url = fileUrl;
   if (isDev) {
     try {
