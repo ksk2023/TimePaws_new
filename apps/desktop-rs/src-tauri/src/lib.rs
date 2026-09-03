@@ -7,6 +7,8 @@ use tauri::{
     Manager,
 };
 
+pub mod tracker;
+
 /// M0 IPC：连通性探测（对应 Electron 版 anchor/ping）
 #[tauri::command]
 fn ping(app: tauri::AppHandle) -> serde_json::Value {
@@ -31,11 +33,35 @@ fn toggle_main_window(app: tauri::AppHandle) {
     }
 }
 
+/// M1 IPC：当前前台快照
+#[tauri::command]
+fn tracker_current() -> Option<tracker::Snapshot> {
+    tracker::current_snapshot()
+}
+
+/// M1 IPC：追踪开关（对应 Electron 版设置页「暂停追踪」）
+#[tauri::command]
+fn tracker_set_paused(paused: bool, app: tauri::AppHandle) {
+    if paused {
+        tracker::stop();
+    } else if !tracker::is_running() {
+        tracker::start(app, 60_000); // 空闲阈值 60s，与 Electron 版默认一致
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![ping, toggle_main_window])
+        .invoke_handler(tauri::generate_handler![
+            ping,
+            toggle_main_window,
+            tracker_current,
+            tracker_set_paused
+        ])
         .setup(|app| {
+            // ---- M1：启动前台追踪（对应 Electron 版 startTracker）----
+            tracker::start(app.handle().clone(), 60_000);
+
             // ---- 托盘（对应 Electron 版 tray.ts）----
             let show_i = MenuItem::with_id(app, "show", "显示 / 隐藏主窗口", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "退出 Anchor", true, None::<&str>)?;

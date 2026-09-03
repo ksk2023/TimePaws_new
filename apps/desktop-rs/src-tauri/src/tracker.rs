@@ -19,19 +19,20 @@ use std::time::Duration;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter};
 
-use windows::Win32::Foundation::{CloseHandle, HANDLE, HMODULE, HWND};
+use windows::Win32::Foundation::{CloseHandle, HANDLE, HWND};
 use windows::Win32::Graphics::Gdi::{MonitorFromWindow, MONITOR_DEFAULTTOPRIMARY};
 use windows::Win32::System::SystemInformation::GetTickCount;
 use windows::Win32::System::Threading::{
     OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_FORMAT, PROCESS_QUERY_LIMITED_INFORMATION,
 };
 use windows::Win32::UI::Accessibility::{
-    SetWinEventHook, UnhookWinEvent, HWINEVENTHOOK, WINEVENT_OUTOFCONTEXT,
+    SetWinEventHook, UnhookWinEvent, HWINEVENTHOOK,
 };
 use windows::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
 use windows::Win32::UI::WindowsAndMessaging::{
     DispatchMessageW, GetForegroundWindow, GetWindowTextW, GetWindowThreadProcessId, IsIconic,
     PeekMessageW, TranslateMessage, EVENT_SYSTEM_FOREGROUND, MSG, PM_REMOVE,
+    WINEVENT_OUTOFCONTEXT,
 };
 
 // ---------------------------------------------------------------- 数据结构
@@ -150,14 +151,19 @@ fn app_info_from_hwnd(hwnd: HWND) -> (String, String) {
 
         let mut buf = [0u16; 1024];
         let mut size = buf.len() as u32;
-        let ok = QueryFullProcessImageNameW(handle, PROCESS_NAME_FORMAT(0), &mut buf, &mut size);
+        let ok = QueryFullProcessImageNameW(
+            handle,
+            PROCESS_NAME_FORMAT(0),
+            windows::core::PWSTR(buf.as_mut_ptr()),
+            &mut size,
+        );
         let _ = CloseHandle(handle);
 
         if ok.is_err() || size == 0 {
             return (format!("pid-{}", pid), format!("pid-{}", pid));
         }
 
-        let full = wide_to_string(&buf);
+        let full = wide_to_string(&buf[..size as usize]);
         // C:\...\chrome.exe → app_name=chrome, app_key=chrome（小写）
         let file = full
             .rsplit(['\\', '/'])
@@ -317,7 +323,7 @@ pub fn start(app: AppHandle, idle_timeout_ms: u64) {
             let hook = SetWinEventHook(
                 EVENT_SYSTEM_FOREGROUND,
                 EVENT_SYSTEM_FOREGROUND,
-                HMODULE::default(),
+                None, // HMODULE: WINEVENT_OUTOFCONTEXT 模式不需要 DLL 句柄
                 Some(win_event_proc),
                 0,
                 0,
