@@ -19,7 +19,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    // 沙箱环境禁止批量删除，改为覆盖写入（旧 hash 资产残留无害）
+    emptyOutDir: false,
     target: 'chrome110',
   },
 });

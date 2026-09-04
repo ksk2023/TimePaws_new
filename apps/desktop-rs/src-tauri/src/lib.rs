@@ -9,6 +9,7 @@ use tauri::{
 
 use std::sync::Mutex;
 
+pub mod autostart;
 pub mod db;
 pub mod overlay;
 pub mod reminders;
@@ -100,7 +101,7 @@ fn tracker_set_paused(paused: bool, app: tauri::AppHandle) {
     if paused {
         tracker::stop();
     } else if !tracker::is_running() {
-        tracker::start(app, 60_000); // 空闲阈值 60s，与 Electron 版默认一致
+        tracker::start(app, tracker::current_idle_timeout());
     }
 }
 
@@ -114,6 +115,77 @@ fn stats_today() -> Result<serde_json::Value, String> {
 #[tauri::command]
 fn stats_daily_totals(days: i64) -> Result<Vec<serde_json::Value>, String> {
     db::stats_daily_totals(days)
+}
+
+/// M6 IPC：热力图时间桶聚合（halfhour/hour/halfday/day/week）
+#[tauri::command]
+fn stats_heatmap(mode: String) -> Result<Vec<serde_json::Value>, String> {
+    db::stats_heatmap(&mode)
+}
+
+// ---- M5 IPC：设置 + 数据管理 ----
+
+fn reminders_json() -> serde_json::Value {
+    serde_json::to_value(reminders::current_config()).unwrap_or(serde_json::json!({}))
+}
+
+#[tauri::command]
+fn settings_get() -> serde_json::Value {
+    let mut v = db::settings_snapshot(reminders_json());
+    // 自启状态以注册表实际值为准（可能被外部清理过）
+    v["autostart"] = serde_json::json!(autostart::is_enabled());
+    v
+}
+
+#[tauri::command]
+fn settings_update(patch: serde_json::Value, app: tauri::AppHandle) -> serde_json::Value {
+    if let Some(v) = patch.get("trackingPaused").and_then(|x| x.as_bool()) {
+        let _ = db::setting_set("trackingPaused", if v { "1" } else { "0" });
+        if v {
+            tracker::stop();
+        } else if !tracker::is_running() {
+            tracker::start(app.clone(), tracker::current_idle_timeout());
+        }
+    }
+    if let Some(v) = patch.get("idleTimeoutMs").and_then(|x| x.as_i64()) {
+        let clamped = v.clamp(5_000, 600_000);
+        let _ = db::setting_set("idleTimeoutMs", &clamped.to_string());
+        tracker::set_idle_timeout(app.clone(), clamped as u64);
+    }
+    if let Some(v) = patch.get("remindersPaused").and_then(|x| x.as_bool()) {
+        let _ = db::setting_set("remindersPaused", if v { "1" } else { "0" });
+        reminders::set_paused(v, &app);
+    }
+    if let Some(v) = patch.get("autostart").and_then(|x| x.as_bool()) {
+        let _ = db::setting_set("autostart", if v { "1" } else { "0" });
+        if let Err(e) = autostart::set_enabled(v) {
+            eprintln!("[autostart] 设置失败: {e}");
+        }
+    }
+    if let Some(r) = patch.get("reminders") {
+        let cfg = reminders::update_config(r.clone());
+        if let Ok(s) = serde_json::to_string(&cfg) {
+            let _ = db::setting_set("reminders", &s);
+        }
+    }
+    settings_get()
+}
+
+#[tauri::command]
+fn data_stats() -> Result<serde_json::Value, String> {
+    db::data_stats()
+}
+
+#[tauri::command]
+fn data_export() -> Result<serde_json::Value, String> {
+    db::data_export()
+}
+
+#[tauri::command]
+fn data_purge(include_tasks: bool, app: tauri::AppHandle) -> Result<serde_json::Value, String> {
+    let r = db::data_purge(include_tasks)?;
+    tasks::notify_changed(&app);
+    Ok(r)
 }
 
 // ---- M3 IPC：任务箱 ----
@@ -187,6 +259,12 @@ pub fn run() {
             tracker_set_paused,
             stats_today,
             stats_daily_totals,
+            stats_heatmap,
+            settings_get,
+            settings_update,
+            data_stats,
+            data_export,
+            data_purge,
             tasks_list,
             tasks_current,
             tasks_create,
@@ -207,6 +285,21 @@ pub fn run() {
             // ---- M2：初始化数据库（先于追踪，会话才有落库目标）----
             if let Err(e) = db::init(app.handle()) {
                 eprintln!("[db] 初始化失败: {e}");
+            }
+
+            // ---- M5：应用持久化设置（提醒配置 / 暂停状态 / 空闲阈值）----
+            if let Some(s) = db::setting_get("reminders") {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&s) {
+                    reminders::update_config(v);
+                }
+            }
+            let tracking_paused = db::setting_get("trackingPaused").as_deref() == Some("1");
+            let reminders_paused = db::setting_get("remindersPaused").as_deref() == Some("1");
+            let idle_timeout = db::setting_get("idleTimeoutMs")
+                .and_then(|v| v.parse::<u64>().ok())
+                .unwrap_or(60_000);
+            if reminders_paused {
+                reminders::set_paused(true, app.handle());
             }
 
             // ---- M2：会话结算 → 落库（桥接 tracker 事件）----
@@ -290,8 +383,10 @@ pub fn run() {
                 });
             }
 
-            // ---- M1：启动前台追踪（对应 Electron 版 startTracker）----
-            tracker::start(app.handle().clone(), 60_000);
+            // ---- M1：启动前台追踪（对应 Electron 版 startTracker；设置页可暂停）----
+            if !tracking_paused {
+                tracker::start(app.handle().clone(), idle_timeout);
+            }
 
             // ---- 托盘（对应 Electron 版 tray.ts）----
             let show_i = MenuItem::with_id(app, "show", "显示 / 隐藏主窗口", true, None::<&str>)?;

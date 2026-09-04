@@ -30,6 +30,8 @@ export async function installTimepawsBridge(): Promise<void> {
     statsToday: () => invoke<unknown>('stats_today').then((v) => parse(v)),
     statsDailyTotals: (days?: number) =>
       invoke<unknown[]>('stats_daily_totals', { days: days ?? 14 }),
+    statsHeatmap: (mode: string) =>
+      invoke<Array<{ bucket: string; totalMs: number }>>('stats_heatmap', { mode }),
     trackerCurrent: () => invoke<unknown | null>('tracker_current'),
     onSessionEnded: (cb: (s: unknown) => void) => {
       sessionCb = cb;
@@ -56,20 +58,23 @@ export async function installTimepawsBridge(): Promise<void> {
     remindersSetPaused: (paused: boolean) => invoke<void>('reminders_set_paused', { paused }),
     remindersSnoozeAll: (ms?: number) => invoke<void>('reminders_snooze_all', { ms: ms ?? null }),
     remindersTest: () => invoke<void>('reminders_test'),
-    settingsGet: () => Promise.resolve({}),
-    settingsUpdate: (p: Record<string, unknown>) => Promise.resolve(p),
+    settingsGet: () => invoke<Record<string, unknown>>('settings_get'),
+    settingsUpdate: (p: Record<string, unknown>) =>
+      invoke<Record<string, unknown>>('settings_update', { patch: p }),
     dataExport: () =>
-      Promise.resolve({ file: '', sessions: 0, dailyAppRows: 0, tasks: 0 }),
-    dataPurge: (_includeTasks: boolean) =>
-      Promise.resolve({
-        sessions: 0,
-        dailyAppRows: 0,
-        dailyTitleRows: 0,
-        events: 0,
-        tasks: 0,
-      }),
+      invoke<{ file: string; sessions: number; dailyAppRows: number; tasks: number }>(
+        'data_export',
+      ),
+    dataPurge: (includeTasks: boolean) =>
+      invoke<{
+        sessions: number;
+        dailyAppRows: number;
+        dailyTitleRows: number;
+        events: number;
+        tasks: number;
+      }>('data_purge', { includeTasks }),
     dataStats: () =>
-      Promise.resolve({ sessions: 0, days: 0, tasks: 0, dbFile: '' }),
+      invoke<{ sessions: number; days: number; tasks: number; dbFile: string }>('data_stats'),
 
     // M4：浮层（#/overlay 路由消费）
     onOverlayPayload: (cb: (p: { kind: string; title: string; body: string }) => void) => {

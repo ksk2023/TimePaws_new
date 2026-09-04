@@ -58,7 +58,7 @@ export default function TasksPage() {
     return (
       <section className="max-w-xl" aria-label="任务箱">
         <h1 className="text-xl font-semibold mb-6">任务箱</h1>
-        <div className="rounded-xl2 bg-surface p-5 text-ink-dim">
+        <div className="rounded-xl2 bg-surface shadow-card p-5 text-ink-dim">
           数据读取失败。<button className="underline hover:text-ink" onClick={refresh}>重试</button>
         </div>
       </section>
@@ -81,7 +81,7 @@ export default function TasksPage() {
           onKeyDown={(e) => { if (e.key === 'Enter') void submitDraft(); }}
           placeholder="写一件最小的事，比如：回一封邮件"
           maxLength={200}
-          className="flex-1 rounded-xl2 bg-surface border border-line px-4 py-2.5 text-base2 text-ink placeholder:text-ink-faint focus:outline-none focus:border-accent"
+          className="flex-1 rounded-xl2 bg-surface shadow-card border border-line px-4 py-2.5 text-base2 text-ink placeholder:text-ink-faint focus:outline-none focus:border-accent"
         />
         <button
           onClick={() => void submitDraft()}
@@ -94,7 +94,7 @@ export default function TasksPage() {
 
       {/* 任务列表 */}
       {list.length === 0 ? (
-        <div className="rounded-xl2 bg-surface p-6 text-center">
+        <div className="rounded-xl2 bg-surface shadow-card p-6 text-center">
           <p className="text-ink-dim">还没有任务</p>
           <p className="text-sm text-ink-faint mt-1">从最小的一步开始写下来。</p>
         </div>

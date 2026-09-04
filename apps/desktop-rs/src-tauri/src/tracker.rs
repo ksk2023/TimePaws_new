@@ -11,7 +11,7 @@
 //! - `SetWinEventHook` 的 `WINEVENT_OUTOFCONTEXT` 模式要求**调用线程有消息泵**，
 //!   因此 hook 注册与本循环同处一个工作线程，用 `PeekMessageW` 非阻塞泵消息
 
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::Duration;
@@ -76,6 +76,8 @@ struct CurrentSession {
 
 static STOP: AtomicBool = AtomicBool::new(false);
 static RUNNING: AtomicBool = AtomicBool::new(false);
+/// 当前生效的空闲阈值（设置页可改，改动即重启引擎）
+static IDLE_TIMEOUT: AtomicU64 = AtomicU64::new(60_000);
 /// WinEvent 回调只做「有变化」标记，避免在 OS 回调里做重活
 static DIRTY: AtomicBool = AtomicBool::new(false);
 static CURRENT: OnceLock<Arc<Mutex<Option<Snapshot>>>> = OnceLock::new();
@@ -86,6 +88,26 @@ fn current_slot() -> &'static Arc<Mutex<Option<Snapshot>>> {
 
 pub fn is_running() -> bool {
     RUNNING.load(Ordering::SeqCst)
+}
+
+pub fn current_idle_timeout() -> u64 {
+    IDLE_TIMEOUT.load(Ordering::SeqCst)
+}
+
+/// 设置页改空闲阈值：运行中则停→等退出→以新阈值重启
+pub fn set_idle_timeout(app: AppHandle, ms: u64) {
+    IDLE_TIMEOUT.store(ms, Ordering::SeqCst);
+    if !is_running() {
+        return;
+    }
+    stop();
+    for _ in 0..100 {
+        if !is_running() {
+            break;
+        }
+        thread::sleep(Duration::from_millis(30));
+    }
+    start(app, ms);
 }
 
 pub fn current_snapshot() -> Option<Snapshot> {
@@ -311,6 +333,7 @@ pub fn start(app: AppHandle, idle_timeout_ms: u64) {
         return; // 已在运行
     }
     STOP.store(false, Ordering::SeqCst);
+    IDLE_TIMEOUT.store(idle_timeout_ms, Ordering::SeqCst);
 
     thread::spawn(move || {
         let mut engine = Engine {

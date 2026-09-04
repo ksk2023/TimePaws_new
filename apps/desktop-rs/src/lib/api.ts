@@ -44,6 +44,7 @@ export interface TimepawsApi {
   onWidgetCollapsedChanged: (cb: (collapsed: boolean) => void) => void;
   statsToday: (dateKey?: string) => Promise<DailySummary>;
   statsDailyTotals: (days?: number) => Promise<Array<{ dateKey: string; totalMs: number }>>;
+  statsHeatmap: (mode: 'halfhour' | 'hour' | 'halfday' | 'day' | 'week') => Promise<Array<{ bucket: string; totalMs: number }>>;
   trackerCurrent: () => Promise<ForegroundInfo | null>;
   onSessionEnded: (cb: (s: unknown) => void) => void;
   tasksList: (includeDone?: boolean) => Promise<TaskInfo[]>;

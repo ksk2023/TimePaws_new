@@ -79,7 +79,7 @@ export default function SettingsPage() {
       )}
 
       {/* 追踪 */}
-      <div className="rounded-xl2 bg-surface px-5 mb-4 divide-y divide-line/50">
+      <div className="rounded-xl2 bg-surface shadow-card px-5 mb-4 divide-y divide-line/50">
         <Toggle
           checked={!s.trackingPaused}
           onChange={(v) => void patch({ trackingPaused: !v })}
@@ -105,7 +105,7 @@ export default function SettingsPage() {
       </div>
 
       {/* 提醒 */}
-      <div className="rounded-xl2 bg-surface px-5 mb-4 divide-y divide-line/50">
+      <div className="rounded-xl2 bg-surface shadow-card px-5 mb-4 divide-y divide-line/50">
         <Toggle
           checked={!s.remindersPaused}
           onChange={(v) => void patch({ remindersPaused: !v })}
@@ -139,7 +139,7 @@ export default function SettingsPage() {
       </div>
 
       {/* 系统 */}
-      <div className="rounded-xl2 bg-surface px-5 mb-4">
+      <div className="rounded-xl2 bg-surface shadow-card px-5 mb-4">
         <Toggle
           checked={s.autostart}
           onChange={(v) => void patch({ autostart: v })}
@@ -149,7 +149,7 @@ export default function SettingsPage() {
       </div>
 
       {/* 数据与隐私 */}
-      <div className="rounded-xl2 bg-surface px-5 py-4 mb-4">
+      <div className="rounded-xl2 bg-surface shadow-card px-5 py-4 mb-4">
         <div className="text-sm text-ink-dim mb-3">数据（全部只存在本机）</div>
         <div className="text-sm text-ink-dim space-y-1 mb-4">
           <div>{stats ? `${stats.sessions} 段会话 · 覆盖 ${stats.days} 天 · ${stats.tasks} 个任务` : '—'}</div>

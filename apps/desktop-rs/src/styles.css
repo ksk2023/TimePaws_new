@@ -8,6 +8,13 @@ body {
   font-family: 'Segoe UI Variable', 'Segoe UI', 'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, sans-serif;
   user-select: none;
   overflow: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 标题统一收紧字距，视觉更挺 */
+h1, h2, h3 {
+  letter-spacing: -0.01em;
 }
 
 /* 输入框允许选中 */
@@ -15,10 +22,70 @@ input, textarea {
   user-select: text;
 }
 
+/* 按钮按压反馈（轻），链接/开关都适用 */
+button {
+  transition: transform 0.08s ease-out, background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, opacity 0.15s ease;
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* 键盘聚焦可达性：暖杏描边 */
+:focus-visible {
+  outline: 2px solid rgba(193, 117, 60, 0.55);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* 选中文本色（输入框内） */
+::selection {
+  background: #EAD2B8;
+  color: #2C2722;
+}
+
 /* 数据数字统一等宽对齐，读时长/趋势更稳 */
 .tabular {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
+}
+
+/* 滑块：细轨道 + 暖杏圆钮，hover 微放大 */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: #E9E2D5;
+  outline: none;
+  cursor: pointer;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #C1753C;
+  border: 2.5px solid #FBF8F2;
+  box-shadow: 0 1px 4px rgba(90, 74, 58, 0.35);
+  transition: transform 0.12s ease;
+}
+input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #C1753C;
+  border: 2.5px solid #FBF8F2;
+  box-shadow: 0 1px 4px rgba(90, 74, 58, 0.35);
+}
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: #E9E2D5;
 }
 
 /* 柔和滚动条（浅色主题） */

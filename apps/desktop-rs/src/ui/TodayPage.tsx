@@ -46,7 +46,7 @@ export default function TodayPage() {
     return (
       <section className="max-w-xl" aria-label="今日">
         <h1 className="text-xl font-semibold mb-2">今天</h1>
-        <div className="rounded-xl2 bg-surface p-5 text-ink-dim">
+        <div className="rounded-xl2 bg-surface shadow-card p-5 text-ink-dim">
           数据读取失败。<button className="underline hover:text-ink" onClick={refresh}>重试</button>
         </div>
       </section>
@@ -67,9 +67,9 @@ export default function TodayPage() {
       </p>
 
       {/* 总时长 hero */}
-      <div className="rounded-xl2 bg-surface px-6 py-7 mb-5">
+      <div className="rounded-xl2 bg-surface shadow-card px-6 py-7 mb-5">
         <div className="text-sm text-ink-dim mb-2">今日专注（主屏计入）</div>
-        <div className="text-display font-semibold text-ink tabular leading-none">
+        <div className="text-display font-display font-semibold text-ink tabular leading-none">
           {fmtDuration(total)}
         </div>
         <div className="mt-4 inline-flex items-center gap-1.5 text-xs text-ink-dim bg-surface-2 rounded-full px-3 py-1">
@@ -79,7 +79,7 @@ export default function TodayPage() {
       </div>
 
       {/* Top 应用 */}
-      <div className="rounded-xl2 bg-surface p-5 mb-4">
+      <div className="rounded-xl2 bg-surface shadow-card p-5 mb-4">
         <div className="text-sm text-ink-dim mb-3">应用分布</div>
         {topApps.length === 0 ? (
           <p className="text-sm text-ink-faint">还没有数据。正常使用电脑，几分钟后回来看。</p>
@@ -102,7 +102,7 @@ export default function TodayPage() {
       </div>
 
       {/* 最近活动 */}
-      <div className="rounded-xl2 bg-surface p-5">
+      <div className="rounded-xl2 bg-surface shadow-card p-5">
         <div className="text-sm text-ink-dim mb-3">最近活动</div>
         {(summary?.recent?.length ?? 0) === 0 ? (
           <p className="text-sm text-ink-faint">暂无记录（会话 ≥5 秒才显示）。</p>

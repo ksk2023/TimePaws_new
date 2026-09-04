@@ -30,6 +30,7 @@ windows = { version = "0.62", features = [
   "Win32_UI_Input_KeyboardAndMouse", # GetLastInputInfo（空闲检测）
   "Win32_Graphics_Gdi",           # MonitorFromWindow（主屏判定）
   "Win32_UI_Shell",               # 进程可执行文件解析兜底
+  "Win32_System_Registry",        # 开机自启（HKCU Run 键）
 ] }
 
 [profile.release]
