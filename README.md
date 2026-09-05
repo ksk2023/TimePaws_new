@@ -9,7 +9,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078d6?style=flat&logo=windows&logoColor=white)](https://github.com/ksk2023/TimePaws_new)
 [![Electron](https://img.shields.io/badge/Electron-38-9feaf9?style=flat&logo=electron&logoColor=black)](https://www.electronjs.org/)
 [![Tauri](https://img.shields.io/badge/Tauri-2-f7c948?style=flat&logo=tauri&logoColor=black)](https://tauri.app/)
-[![Privacy](https://img.shields.io/badge/隐私-本地优先%20·%20无遥测-22c55e?style=flat&logo=privacytools&logoColor=white)](#隐私承诺)
+[![Privacy](https://img.shields.io/badge/Privacy-Local--First-22c55e?style=flat&logo=privacytools&logoColor=white)](#隐私承诺)
 [![Node](https://img.shields.io/badge/Node-%E2%89%A520-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
 
 **本地优先的 Windows 桌面陪伴层，面向 ADHD / 注意力容易漂移的用户。**
